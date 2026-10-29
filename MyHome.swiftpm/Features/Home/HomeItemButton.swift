@@ -11,7 +11,8 @@ struct HomeItemButton: View {
         Button {
             router.launch(item)
         } label: {
-            VStack(spacing: DesignTokens.Spacing.small) {
+            // IconTile の下側にも Icon.badgeInset の余白があるので、名前との間隔は小さくする
+            VStack(spacing: DesignTokens.Spacing.xSmall) {
                 IconTile(symbolName: item.symbolName, tint: item.tint, badge: item.badge, size: DesignTokens.Icon.size)
                 title
             }

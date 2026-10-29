@@ -8,11 +8,12 @@ struct DockView: View {
 
     var body: some View {
         if !items.isEmpty {
+            // 間隔と余白は、IconTile が四方に持つ Icon.badgeInset（7pt）を差し引いた値
             ViewThatFits(in: .horizontal) {
-                DockRow(items: items, iconSize: DesignTokens.Icon.dockSize, spacing: DesignTokens.Spacing.large)
-                DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: DesignTokens.Spacing.small)
+                DockRow(items: items, iconSize: DesignTokens.Icon.dockSize, spacing: DesignTokens.Spacing.small)
+                DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: 0)
                 ScrollView(.horizontal) {
-                    DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: DesignTokens.Spacing.small)
+                    DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: 0)
                 }
             }
             .padding(.horizontal, DesignTokens.Spacing.medium)
@@ -32,8 +33,8 @@ struct DockRow: View {
                 DockItemButton(item: item, iconSize: iconSize)
             }
         }
-        .padding(.horizontal, DesignTokens.Spacing.large)
-        .padding(.vertical, DesignTokens.Spacing.medium)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.Spacing.small)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
     }
 }

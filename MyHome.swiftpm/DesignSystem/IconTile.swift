@@ -1,6 +1,8 @@
 import SwiftUI
 
 /// ホーム画面と Dock で共通のアイコン。色・記号と、種類の印（外部リンク / スタブ / 準備中）を表示する。
+/// 枠の大きさは一辺 size + 2 × Icon.badgeInset。印のはみ出し分を含むので、どの入れ物に置いても印は切れない
+/// （iPad で、グリッド最上段の印がスクロール領域の上端で切れていた）。
 @MainActor
 struct IconTile: View {
     let symbolName: String
@@ -15,6 +17,7 @@ struct IconTile: View {
             .overlay { symbol }
             .frame(width: size, height: size)
             .overlay(alignment: .topTrailing) { badgeView }
+            .padding(DesignTokens.Icon.badgeInset)
     }
 
     private var cornerRadius: CGFloat {

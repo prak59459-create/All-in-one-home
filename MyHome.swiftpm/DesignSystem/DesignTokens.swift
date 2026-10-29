@@ -25,14 +25,18 @@ enum DesignTokens {
         /// 記号の大きさ（一辺に対する比率）。
         static let symbolRatio: CGFloat = 0.45
         static let labelWidth: CGFloat = 96
+        /// 印がアイコンの右上からはみ出す量。
         static let badgeOffset: CGFloat = 6
+        /// アイコンの四方に確保する余白。はみ出した印（と縁取りの線 1pt）も IconTile の枠に含め、
+        /// ScrollView のような切り抜く入れ物の端に置かれても切れないようにする。
+        static let badgeInset: CGFloat = badgeOffset + 1
     }
 
     enum Grid {
         static let horizontalPadding: CGFloat = 20
-        /// スクロール領域の上下の余白。アイコンの印は上に Icon.badgeOffset だけはみ出すので、それより大きくする
-        /// （余白がないと最上段の印がスクロール領域の端で切れる。Simulator のスクリーンショットで確認）。
-        static let verticalPadding: CGFloat = 12
+        /// スクロール領域の上下の余白。最上段と最下段がスクロール領域の端に貼り付かないようにする
+        /// （印のはみ出し分は IconTile 自身が Icon.badgeInset で確保する）。
+        static let verticalPadding: CGFloat = 8
         static let rowSpacing: CGFloat = 24
     }
 
