@@ -13,6 +13,9 @@ MyHome.swiftpm/.build/
 # Local measurement logs
 build-logs/
 
+# Claude Code の個人用設定（共有する権限設定は .claude/settings.json）
+.claude/settings.local.json
+
 # LLM モデルファイルはリポジトリに含めない（ユーザーが端末で取り込む。PLAN.md「ローカルLLMの方針」）
 *.gguf
 *.safetensors
