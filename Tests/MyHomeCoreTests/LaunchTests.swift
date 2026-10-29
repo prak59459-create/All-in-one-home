@@ -79,6 +79,20 @@ final class LaunchTests: XCTestCase {
         XCTAssertEqual(options.initialLayout().pages[0].items.count, 150)
     }
 
+    @MainActor
+    func testLaunchOptionsCanStartEditingWithFolderOpen() async {
+        let options = LaunchOptions(arguments: ["MyHome", "-MyHomeStartEditing", "-MyHomeOpenFolder", "folder.check"])
+        XCTAssertTrue(options.startsEditing)
+        XCTAssertEqual(options.openFolderID, "folder.check")
+        let router = AppRouter()
+        options.apply(to: router)
+        XCTAssertTrue(router.isEditing)
+        XCTAssertEqual(router.openFolderID, "folder.check")
+        let plain = LaunchOptions(arguments: ["MyHome"])
+        XCTAssertFalse(plain.startsEditing)
+        XCTAssertNil(plain.openFolderID)
+    }
+
     func testLaunchOptionsDefaultToNormalLayout() {
         let options = LaunchOptions(arguments: ["MyHome", "-MyHomeSampleItems"])
         XCTAssertNil(options.sampleItemCount)

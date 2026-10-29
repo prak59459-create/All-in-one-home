@@ -1,19 +1,26 @@
 import Foundation
 
 /// 起動引数による検証用の設定。Simulator や Xcode から起動した時だけ使う（Swift Playgrounds では指定できない）。
-/// 例: `-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150`
+/// 例: `-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150`、`-MyHomeStartEditing`、`-MyHomeOpenFolder <項目 ID>`
+/// 操作を自動で行えない Simulator の起動テストで、編集中やフォルダを開いた画面のスクリーンショットを撮るために使う。
 struct LaunchOptions: Hashable, Sendable {
     static let sampleItemsFlag: String = "-MyHomeSampleItems"
     static let sampleItemsPerPageFlag: String = "-MyHomeSampleItemsPerPage"
+    static let startEditingFlag: String = "-MyHomeStartEditing"
+    static let openFolderFlag: String = "-MyHomeOpenFolder"
     static let defaultItemsPerPage: Int = 60
 
     var sampleItemCount: Int?
     var sampleItemsPerPage: Int
+    var startsEditing: Bool
+    var openFolderID: String?
 
     init(arguments: [String]) {
         sampleItemCount = LaunchOptions.intValue(after: LaunchOptions.sampleItemsFlag, in: arguments)
         let perPage: Int? = LaunchOptions.intValue(after: LaunchOptions.sampleItemsPerPageFlag, in: arguments)
         sampleItemsPerPage = perPage ?? LaunchOptions.defaultItemsPerPage
+        startsEditing = arguments.contains(LaunchOptions.startEditingFlag)
+        openFolderID = LaunchOptions.value(after: LaunchOptions.openFolderFlag, in: arguments)
     }
 
     static func current() -> LaunchOptions {
@@ -33,10 +40,25 @@ struct LaunchOptions: Hashable, Sendable {
         return SampleLayout.stress(itemCount: count, itemsPerPage: sampleItemsPerPage)
     }
 
+    /// 起動時の画面の状態（編集中・開くフォルダ）を反映する。
+    @MainActor
+    func apply(to router: AppRouter) {
+        if startsEditing {
+            router.beginEditing()
+        }
+        if let openFolderID {
+            router.openFolderID = openFolderID
+        }
+    }
+
     private static func intValue(after flag: String, in arguments: [String]) -> Int? {
+        value(after: flag, in: arguments).flatMap { (text: String) -> Int? in Int(text) }
+    }
+
+    private static func value(after flag: String, in arguments: [String]) -> String? {
         guard let index = arguments.firstIndex(of: flag), index + 1 < arguments.count else {
             return nil
         }
-        return Int(arguments[index + 1])
+        return arguments[index + 1]
     }
 }

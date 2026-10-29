@@ -21,7 +21,7 @@ final class SavedHomeCodingTests: XCTestCase {
         let item: HomeItem = PersistenceFixtures.link("a")
         let saved = SavedHome(layout: PersistenceFixtures.layout(pages: [[item]]), settings: .defaults)
         let text: String = String(decoding: try HomeArchiveCodec.encode(saved), as: UTF8.self)
-        XCTAssertTrue(text.contains("\"schemaVersion\" : 1"), text)
+        XCTAssertTrue(text.contains("\"schemaVersion\" : \(SavedHome.currentSchemaVersion)"), text)
         XCTAssertTrue(text.contains("\"kind\" : \"url\""), text)
         XCTAssertTrue(text.contains("\"url\" : \"https://example.com/a\""), "スラッシュをエスケープしない")
         XCTAssertTrue(text.contains("\"tint\" : \"#2563EB\""), text)
@@ -63,16 +63,26 @@ final class SavedHomeCodingTests: XCTestCase {
         XCTAssertEqual(resolved, ThemeCatalog.defaultID)
     }
 
-    func testSimulatorRestoreFixtureDecodes() throws {
-        // scripts/smoke-test-simulator.sh の restore で使う保存ファイルが、今の形式で読めることを確かめる
+    private func fixture(_ name: String) throws -> Data {
         let root: URL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        let data: Data = try Data(contentsOf: root.appendingPathComponent("scripts/fixtures/home-restore.json"))
-        let saved: SavedHome = try HomeArchiveCodec.decode(data)
+        return try Data(contentsOf: root.appendingPathComponent("scripts/fixtures/\(name)"))
+    }
+
+    func testSimulatorRestoreFixtureDecodes() throws {
+        // scripts/smoke-test-simulator.sh の restore で使う保存ファイル（版 1）が、今の形式へ移行して読めることを確かめる
+        let saved: SavedHome = try HomeArchiveCodec.decode(try fixture("home-restore.json"))
         XCTAssertEqual(saved.layout.pages[0].items.map(\.title), ["復元テスト1", "復元テスト2", "AI"])
         XCTAssertEqual(saved.settings, SavedSettings(themeID: "forest", appearance: .dark))
+    }
+
+    func testSimulatorFolderFixtureDecodes() throws {
+        // editing / folder で使う保存ファイル（版 2、フォルダ入り）。-MyHomeOpenFolder folder.check で開くフォルダがあること
+        let saved: SavedHome = try HomeArchiveCodec.decode(try fixture("home-folder.json"))
+        XCTAssertEqual(saved.layout.item(id: "folder.check")?.folderItems?.count, 3)
+        XCTAssertEqual(saved.layout.pages.count, 2)
     }
 
     func testDecodedLayoutIsNormalized() throws {

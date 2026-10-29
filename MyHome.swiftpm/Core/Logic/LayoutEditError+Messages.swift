@@ -4,15 +4,25 @@ extension LayoutEditError {
         case .itemNotFound:
             return "項目が見つかりません。すでに削除された可能性があります。"
         case .pageNotFound:
-            return "追加先のページが見つかりません。"
+            return "ページが見つかりません。"
         case .duplicateID:
             return "同じ ID の項目がすでにあります。"
         case .itemLimitReached:
             return "項目は \(LayoutLimits.maximumItems) 件までです。不要な項目を削除してから追加してください。"
         case .notRemovable:
             return "この項目は削除できません（設定を開く手段がなくなるため）。"
-        case .differentContainer:
-            return "別のページや Dock への移動はまだできません（Phase 3 で対応します）。"
+        case .dockFull:
+            return "Dock に置けるのは \(HomeLayout.maximumDockItems) 個までです。先に Dock から項目を移してください。"
+        case .folderInFolder:
+            return "フォルダの中にフォルダは入れられません。"
+        case .titleTooLong:
+            return "名前は \(LayoutLimits.maximumTitleLength) 文字までです。"
+        case .pageLimitReached:
+            return "ページは \(LayoutLimits.maximumPages) ページまでです。"
+        case .lastPage:
+            return "最後の1ページは削除できません。"
+        case .pageNotEmpty:
+            return "項目が残っているページは削除できません。先に項目を別のページへ移すか、削除してください。"
         }
     }
 }

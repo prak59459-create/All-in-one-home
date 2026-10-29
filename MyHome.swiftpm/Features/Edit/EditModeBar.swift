@@ -1,35 +1,86 @@
 import SwiftUI
 
-/// 編集モード中に画面上部に出すバー（F0035、F0036）。項目の追加と、編集の終了を行う。
+/// 編集モード中に画面上部に出すバー（F0035、F0036）。取り消し・やり直し（F0033、F0034）、ページの管理、
+/// 項目の追加、編集の終了。狭いウィンドウでは説明文を省き、ボタンを記号だけにする。
 @MainActor
 struct EditModeBar: View {
     let pageIndex: Int
-    @Environment(AppRouter.self) private var router
 
     var body: some View {
-        HStack(spacing: DesignTokens.Spacing.medium) {
-            VStack(alignment: .leading, spacing: 2) {
-                Label("ホーム画面を編集中", systemImage: "square.and.pencil")
-                    .font(.headline)
-                Text("アイコンを長押しして別のアイコンに重ねると並べ替え、左上の − で削除します。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+        ViewThatFits(in: .horizontal) {
+            EditModeBarContent(pageIndex: pageIndex, isCompact: false)
+            EditModeBarContent(pageIndex: pageIndex, isCompact: true)
+        }
+        .padding(.horizontal, DesignTokens.Grid.horizontalPadding)
+    }
+}
+
+@MainActor
+struct EditModeBarContent: View {
+    let pageIndex: Int
+    let isCompact: Bool
+    @Environment(AppRouter.self) private var router
+    @Environment(HomeStore.self) private var store
+
+    var body: some View {
+        HStack(spacing: DesignTokens.Spacing.small) {
+            heading
             Spacer(minLength: DesignTokens.Spacing.small)
-            Button {
-                router.presentAddItem(pageIndex: pageIndex)
-            } label: {
-                Label("追加", systemImage: "plus")
+            barButton("取り消す", symbol: "arrow.uturn.backward", enabled: store.canUndo) {
+                store.undo()
             }
-            .buttonStyle(.bordered)
+            .keyboardShortcut("z", modifiers: .command)
+            barButton("やり直す", symbol: "arrow.uturn.forward", enabled: store.canRedo) {
+                store.redo()
+            }
+            .keyboardShortcut("z", modifiers: [.command, .shift])
+            barButton("ページ", symbol: "rectangle.stack", enabled: true) {
+                router.presentPageManager()
+            }
+            barButton("追加", symbol: "plus", enabled: true) {
+                router.presentAddItem(pageIndex: pageIndex)
+            }
             Button("完了") {
                 router.endEditing()
             }
             .buttonStyle(.borderedProminent)
+            .fixedSize()
         }
         .padding(.horizontal, DesignTokens.Spacing.medium)
         .padding(.vertical, DesignTokens.Spacing.small)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.medium, style: .continuous))
-        .padding(.horizontal, DesignTokens.Grid.horizontalPadding)
+    }
+
+    @ViewBuilder
+    private var heading: some View {
+        if isCompact {
+            Image(systemName: "square.and.pencil")
+                .font(.headline)
+                .accessibilityLabel("ホーム画面を編集中")
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                Label("ホーム画面を編集中", systemImage: "square.and.pencil")
+                    .font(.headline)
+                Text("長押しして別の項目・フォルダ・ページの点・Dock に重ねると移動、タップで名前や移動先の変更、− で削除。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(minWidth: 260, alignment: .leading)
+        }
+    }
+
+    private func barButton(_ title: String, symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            if isCompact {
+                Label(title, systemImage: symbol)
+                    .labelStyle(.iconOnly)
+            } else {
+                Label(title, systemImage: symbol)
+            }
+        }
+        .buttonStyle(.bordered)
+        .disabled(!enabled)
+        .fixedSize()
     }
 }

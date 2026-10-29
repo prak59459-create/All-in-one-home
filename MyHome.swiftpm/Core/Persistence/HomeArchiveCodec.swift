@@ -43,10 +43,12 @@ enum HomeArchiveCodec {
         return saved
     }
 
-    /// 古い版の形式を今の形式に変換する入口（F0823）。版 1 が最初の形式なので、今は変換するものがない。
-    /// 版 2 を作る時は「版 1 の型で読み、版 2 に変換する」処理を version == 1 の場合としてここに足す。
+    /// 古い版の形式を今の形式に変換する（F0823）。
+    /// 版 1 → 2: 版 2 は項目の種類（フォルダ）を足しただけなので、版 1 のデータはそのまま版 2 として読める。
+    /// 構造を変える版を作る時は、古い版の型で読んでから変換する処理を、その版の場合としてここに足す。
     static func migrate(_ data: Data, from version: Int) throws -> SavedHome {
         let saved: SavedHome = try decodeJSON(SavedHome.self, from: data)
+        // 書き戻す時は今の版になる
         return SavedHome(layout: saved.layout, settings: saved.settings)
     }
 

@@ -1,7 +1,8 @@
 /// 保存ファイルの中身（F0801–F0803、F0807）。JSON の未知のキーは読み飛ばす（F0822）。
 /// 形式を変える時は currentSchemaVersion を上げ、HomeArchiveCodec.migrate に古い版からの変換を足す（F0823）。
+/// 版 1: Phase 2（ページ・Dock・項目・設定）。版 2: Phase 3（項目の種類にフォルダが増えた）。
 struct SavedHome: Codable, Hashable, Sendable {
-    static let currentSchemaVersion: Int = 1
+    static let currentSchemaVersion: Int = 2
 
     var schemaVersion: Int
     var layout: HomeLayout

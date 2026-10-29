@@ -30,6 +30,8 @@ extension HomeItem {
             return .externalLink
         case .feature(let feature):
             return HomeItem.badge(for: feature.state)
+        case .folder:
+            return nil
         }
     }
 
@@ -43,6 +45,8 @@ extension HomeItem {
                 return feature.state == .stub ? "スタブです。実際の処理は行いません" : "アプリ内の機能を開きます"
             }
             return "\(feature.state.label)の機能です"
+        case .folder(let items):
+            return "フォルダ。\(items.count) 個の項目があります"
         }
     }
 

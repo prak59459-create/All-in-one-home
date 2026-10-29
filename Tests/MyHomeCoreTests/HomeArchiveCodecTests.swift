@@ -45,8 +45,9 @@ final class HomeArchiveCodecTests: XCTestCase {
     }
 
     func testNewerVersionIsRejectedWithoutGuessing() {
-        let error: HomeArchiveError? = decodeError(#"{"schemaVersion": 2, "layout": {"whatever": true}}"#)
-        XCTAssertEqual(error, .newerVersion(2))
+        let newer: Int = SavedHome.currentSchemaVersion + 1
+        let error: HomeArchiveError? = decodeError("{\"schemaVersion\": \(newer), \"layout\": {\"whatever\": true}}")
+        XCTAssertEqual(error, .newerVersion(newer))
     }
 
     func testWrongTypesAreRejected() {

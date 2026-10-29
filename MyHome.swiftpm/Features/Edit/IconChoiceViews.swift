@@ -5,12 +5,13 @@ import SwiftUI
 struct SymbolChoiceGrid: View {
     @Binding var selection: String
     let tint: RGBAColor
+    var symbols: [String] = IconChoices.symbols
 
     private let columns: [GridItem] = [GridItem(.adaptive(minimum: 52), spacing: DesignTokens.Spacing.small)]
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.small) {
-            ForEach(IconChoices.symbols, id: \.self) { symbol in
+            ForEach(symbols, id: \.self) { symbol in
                 SymbolChoiceButton(symbol: symbol, tint: tint, isSelected: symbol == selection) {
                     selection = symbol
                 }

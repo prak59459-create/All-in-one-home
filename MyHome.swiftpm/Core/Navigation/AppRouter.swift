@@ -6,12 +6,18 @@ enum AppSheet: Identifiable, Hashable, Sendable {
     case unavailable(AppFeature)
     /// 項目の追加（追加先のページ番号）。
     case addItem(pageIndex: Int)
+    /// 項目の編集（名前・記号・色・移動先。項目 ID）。
+    case editItem(String)
+    /// ページの管理（追加・削除・並べ替え）。
+    case managePages
 
     var id: String {
         switch self {
         case .feature(let feature): return "feature.\(feature.rawValue)"
         case .unavailable(let feature): return "unavailable.\(feature.rawValue)"
         case .addItem(let pageIndex): return "add.\(pageIndex)"
+        case .editItem(let itemID): return "edit.\(itemID)"
+        case .managePages: return "pages"
         }
     }
 }
@@ -29,7 +35,8 @@ enum AppAlert: Hashable, Sendable {
         switch self {
         case .confirmURL: return "リンクを開きますか？"
         case .message: return "開けません"
-        case .confirmRemoval(let item): return "「\(item.title)」を削除しますか？"
+        case .confirmRemoval(let item):
+            return item.isFolder ? "フォルダ「\(item.title)」を解除しますか？" : "「\(item.title)」を削除しますか？"
         case .notice(let title, _): return title
         }
     }
@@ -38,7 +45,11 @@ enum AppAlert: Hashable, Sendable {
         switch self {
         case .confirmURL(let checked): return checked.confirmationMessage
         case .message(let text): return text
-        case .confirmRemoval: return "ホーム画面から取り除きます。リンク先の Web ページや他のアプリには影響しません。"
+        case .confirmRemoval(let item):
+            if let children = item.folderItems {
+                return "中の \(children.count) 個の項目は、フォルダのあった場所に戻します。項目は削除されません。"
+            }
+            return "ホーム画面から取り除きます。リンク先の Web ページや他のアプリには影響しません。"
         case .notice(_, let message): return message
         }
     }
@@ -52,6 +63,9 @@ final class AppRouter {
     private(set) var alert: AppAlert?
     /// 編集モード（F0035）。編集中は項目をタップしても開かない。
     private(set) var isEditing: Bool = false
+    /// 開いているフォルダ（項目 ID）。ホーム画面の上に重ねて表示する（シートにしないのは、
+    /// フォルダの中から開いたリンクの確認ダイアログや機能のシートを、ホーム画面からそのまま出せるようにするため）。
+    var openFolderID: String?
 
     init() {}
 
@@ -66,7 +80,28 @@ final class AppRouter {
             sheet = .feature(feature)
         case .explainUnavailable(let feature):
             sheet = .unavailable(feature)
+        case .openFolder:
+            openFolderID = item.id
         }
+    }
+
+    /// 編集中に項目をタップした時。名前・記号・色・移動先を変えるシートを開く。
+    func presentItemEditor(for item: HomeItem) {
+        sheet = .editItem(item.id)
+    }
+
+    func presentPageManager() {
+        sheet = .managePages
+    }
+
+    /// フォルダを開く（編集中でも開ける。中の項目の並べ替えや取り出しのため）。
+    func openFolder(_ item: HomeItem) {
+        guard item.isFolder else { return }
+        openFolderID = item.id
+    }
+
+    func closeFolder() {
+        openFolderID = nil
     }
 
     func beginEditing() {

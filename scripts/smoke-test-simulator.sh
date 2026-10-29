@@ -3,7 +3,9 @@
 #   default : 初期レイアウト（保存ファイルなし）
 #   empty   : 項目 0 件（-MyHomeSampleItems 0。検証用の起動なので保存しない）
 #   many    : 1ページに 150 件（-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150）
-#   restore : 保存ファイル（scripts/fixtures/home-restore.json）を置いて起動し、その配置で復元されるか（T2-7）
+#   restore : 保存ファイル（scripts/fixtures/home-restore.json、形式の版 1）を置いて起動し、その配置で復元されるか（T2-7、版 1 → 2 の移行）
+#   editing : フォルダ入りの保存ファイル（home-folder.json、版 2）で、編集モードで起動（-MyHomeStartEditing）
+#   folder  : 同じファイルで、フォルダを開いて起動（-MyHomeOpenFolder folder.check）
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
@@ -81,6 +83,16 @@ if [ -f "$DATA_DIR/home.json" ] && [ -z "$(find "$DATA_DIR" -name 'home.unreadab
   record_check restore-file PASS "保存ファイルを読み込めた（別名に退避されていない。表示は restore.png）"
 else
   record_check restore-file FAIL "保存ファイルが読み込めず、別名に退避された"
+fi
+
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+cp "$ROOT/scripts/fixtures/home-folder.json" "$DATA_DIR/home.json"
+launch_case editing -MyHomeStartEditing
+launch_case folder -MyHomeOpenFolder folder.check
+if [ -z "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
+  record_check folder-file PASS "フォルダ入りの保存ファイルを読み込めた（表示は editing.png / folder.png）"
+else
+  record_check folder-file FAIL "フォルダ入りの保存ファイルが読み込めず、別名に退避された"
 fi
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true

@@ -20,6 +20,10 @@ struct FeatureSheetView: View {
             UnavailableFeatureView(feature: feature)
         case .addItem(let pageIndex):
             AddItemView(pageIndex: pageIndex)
+        case .editItem(let itemID):
+            ItemEditorView(itemID: itemID)
+        case .managePages:
+            PageManagerView()
         }
     }
 }

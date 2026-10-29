@@ -8,6 +8,8 @@ enum LayoutProblem: Hashable, Sendable {
     case duplicateItemID(String)
     /// 名前・記号名・URL のどれかが長すぎる。
     case textTooLong(itemID: String)
+    /// フォルダの中にフォルダがある（階層は1段まで。F0156、F0157）。
+    case nestedFolder(itemID: String)
 }
 
 /// 読み込んだ配置の構造を確かめる（F0821、F0824）。
@@ -47,8 +49,10 @@ enum LayoutValidator {
     private static func itemProblems(in layout: HomeLayout) -> [LayoutProblem] {
         var problems: [LayoutProblem] = []
         var seen: Set<String> = []
-        let pageItems: [HomeItem] = layout.pages.flatMap { page in page.items }
-        for item in pageItems + layout.dock {
+        let pageItems: [HomeItem] = layout.pages.flatMap { (page: HomePage) -> [HomeItem] in page.items }
+        let topLevel: [HomeItem] = pageItems + layout.dock
+        problems.append(contentsOf: nestingProblems(in: topLevel))
+        for item in flattened(topLevel) {
             if !isValidID(item.id) {
                 problems.append(.invalidItemID(item.id))
             } else if !seen.insert(item.id).inserted {
@@ -59,6 +63,26 @@ enum LayoutValidator {
             }
             if problems.count >= maximumReportedProblems {
                 break
+            }
+        }
+        return problems
+    }
+
+    /// フォルダの中身も含めた一覧（ID の重複はフォルダの内外をまたいで調べる）。
+    private static func flattened(_ items: [HomeItem]) -> [HomeItem] {
+        var result: [HomeItem] = []
+        for item in items {
+            result.append(item)
+            result.append(contentsOf: item.folderItems ?? [])
+        }
+        return result
+    }
+
+    private static func nestingProblems(in topLevel: [HomeItem]) -> [LayoutProblem] {
+        var problems: [LayoutProblem] = []
+        for folder in topLevel {
+            for child in folder.folderItems ?? [] where child.isFolder {
+                problems.append(.nestedFolder(itemID: child.id))
             }
         }
         return problems

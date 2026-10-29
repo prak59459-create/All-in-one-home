@@ -50,10 +50,12 @@ struct FileHomeArchiveStorage: HomeArchiveStorage {
         return name
     }
 
-    /// 例: home.unreadable-1761750000.json（同じ名前があれば -2、-3 … を付ける）。
+    /// 例: home.unreadable-20261029-221402.json（端末の時刻。同じ名前があれば -2、-3 … を付ける）。
     private func unusedName(label: String) -> String {
-        let stamp: Int = Int(Date().timeIntervalSince1970)
-        let base: String = "home.\(label)-\(stamp)"
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let base: String = "home.\(label)-\(formatter.string(from: Date()))"
         var name: String = base + ".json"
         var counter: Int = 2
         while FileManager.default.fileExists(atPath: directory.appendingPathComponent(name).path) {

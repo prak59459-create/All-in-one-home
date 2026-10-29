@@ -1,0 +1,93 @@
+{
+  "layout": {
+    "dock": [
+      {
+        "action": {
+          "feature": "settings",
+          "kind": "feature"
+        },
+        "id": "feature.settings",
+        "symbolName": "gearshape.fill",
+        "tint": "#6B7280",
+        "title": "設定"
+      },
+      {
+        "action": {
+          "feature": "featureStatus",
+          "kind": "feature"
+        },
+        "id": "feature.featureStatus",
+        "symbolName": "checklist",
+        "tint": "#0D9488",
+        "title": "機能の状況"
+      }
+    ],
+    "pages": [
+      {
+        "id": "page.folder",
+        "items": [
+          {
+            "action": {
+              "items": [
+                {
+                  "action": {
+                    "kind": "url",
+                    "url": "https://www.swift.org"
+                  },
+                  "id": "user.folder-1",
+                  "symbolName": "star.fill",
+                  "tint": "#16A34A",
+                  "title": "フォルダの中1"
+                },
+                {
+                  "action": {
+                    "kind": "url",
+                    "url": "https://example.com"
+                  },
+                  "id": "user.folder-2",
+                  "symbolName": "heart.fill",
+                  "tint": "#DC2626",
+                  "title": "フォルダの中2"
+                },
+                {
+                  "action": {
+                    "feature": "notes",
+                    "kind": "feature"
+                  },
+                  "id": "feature.notes",
+                  "symbolName": "note.text",
+                  "tint": "#F5B700",
+                  "title": "メモ"
+                }
+              ],
+              "kind": "folder"
+            },
+            "id": "folder.check",
+            "symbolName": "folder.fill",
+            "tint": "#475569",
+            "title": "フォルダ確認"
+          },
+          {
+            "action": {
+              "kind": "url",
+              "url": "https://developer.apple.com"
+            },
+            "id": "user.page-1",
+            "symbolName": "book.fill",
+            "tint": "#2563EB",
+            "title": "ページの項目"
+          }
+        ]
+      },
+      {
+        "id": "page.second",
+        "items": []
+      }
+    ]
+  },
+  "schemaVersion": 2,
+  "settings": {
+    "appearance": "light",
+    "themeID": "sunset"
+  }
+}

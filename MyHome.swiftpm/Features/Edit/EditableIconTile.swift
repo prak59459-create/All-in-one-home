@@ -9,7 +9,7 @@ struct EditableIconTile: View {
     @Environment(AppRouter.self) private var router
 
     var body: some View {
-        IconTile(symbolName: item.symbolName, tint: item.tint, badge: item.badge, size: size)
+        ItemTile(item: item, size: size)
             .overlay(alignment: .topLeading) {
                 if router.isEditing && item.isRemovable {
                     RemoveItemButton(item: item)

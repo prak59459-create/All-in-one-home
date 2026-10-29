@@ -14,10 +14,19 @@ struct HomeScreen: View {
         ZStack {
             WallpaperView(palette: palette)
             content
+            if let folderID = router.openFolderID {
+                FolderOverlayView(folderID: folderID)
+            }
         }
         .environment(\.homePalette, palette)
         .preferredColorScheme(settings.appearance.colorScheme)
         .modifier(LaunchPresentationModifier(router: router))
+        .onChange(of: store.layout.pages.count) { _, count in
+            // ページが減って、表示中のページがなくなった時
+            if pageIndex >= count {
+                pageIndex = max(count - 1, 0)
+            }
+        }
     }
 
     private var palette: ThemePalette {

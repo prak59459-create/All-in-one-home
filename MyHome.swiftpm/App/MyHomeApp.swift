@@ -12,8 +12,10 @@ struct MyHomeApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        let boot: AppBootstrap = AppBootstrap.make(options: LaunchOptions.current())
+        let options: LaunchOptions = LaunchOptions.current()
+        let boot: AppBootstrap = AppBootstrap.make(options: options)
         let router = AppRouter()
+        options.apply(to: router)
         if let notice = boot.startupNotice {
             router.showNotice(title: "保存データについて", message: notice)
         }

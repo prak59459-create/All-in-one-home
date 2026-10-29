@@ -25,8 +25,9 @@ struct ItemContextMenuModifier: ViewModifier {
     }
 }
 
-/// 編集中の項目の操作。ドラッグして別の項目に重ねると並べ替える（F0059。同じページ・Dock の中だけ）。
-/// ドラッグを使わない方法として、VoiceOver の操作に「前に移動」「後ろに移動」「削除」を用意する。
+/// 編集中の項目の操作。ドラッグして別の項目に重ねると、その位置へ移す（F0059、F0100。ページ・Dock・フォルダをまたげる）。
+/// フォルダに重ねると中に入れる（F0146）。タップすると名前・記号・色・移動先を変えるシートを開く（フォルダは開く）。
+/// ドラッグを使わない方法として、VoiceOver の操作に「編集」「前に移動」「後ろに移動」「削除」を用意する。
 @MainActor
 struct EditingItemModifier: ViewModifier {
     let item: HomeItem
@@ -36,16 +37,25 @@ struct EditingItemModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .contentShape(Rectangle())
+            .onTapGesture {
+                open()
+            }
             .draggable(item.id) {
-                IconTile(symbolName: item.symbolName, tint: item.tint, badge: nil, size: iconSize)
+                ItemTile(item: item, size: iconSize)
             }
             .dropDestination(for: String.self) { droppedIDs, _ in
                 moveDropped(droppedIDs)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(item.title)
-            .accessibilityHint("編集中です。操作の一覧から移動や削除ができます")
+            .accessibilityHint(item.isFolder ? "編集中です。ダブルタップでフォルダを開きます" : "編集中です。ダブルタップで名前や移動先を変えます")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction {
+                open()
+            }
             .accessibilityActions {
+                Button("編集") { router.presentItemEditor(for: item) }
                 Button("前に移動") { move(by: -1) }
                 Button("後ろに移動") { move(by: 1) }
                 if item.isRemovable {
@@ -54,17 +64,18 @@ struct EditingItemModifier: ViewModifier {
             }
     }
 
+    private func open() {
+        if item.isFolder {
+            router.openFolder(item)
+        } else {
+            router.presentItemEditor(for: item)
+        }
+    }
+
     private func moveDropped(_ droppedIDs: [String]) -> Bool {
         guard let movingID = droppedIDs.first, movingID != item.id else { return false }
-        do {
+        return DropMover.perform(store: store, router: router) { store in
             try store.move(itemID: movingID, onto: item.id)
-            return true
-        } catch LayoutEditError.differentContainer {
-            router.showNotice(title: "移動できません", message: LayoutEditError.differentContainer.message)
-            return false
-        } catch {
-            // ホーム画面の項目ではない文字列（他のアプリからのドラッグなど）は無視する
-            return false
         }
     }
 

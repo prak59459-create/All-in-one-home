@@ -8,6 +8,8 @@ enum LaunchPlan: Hashable, Sendable {
     case openFeature(AppFeature)
     /// 未実装・OS 制限などで開けない理由を表示する。
     case explainUnavailable(AppFeature)
+    /// フォルダを開く。
+    case openFolder
 }
 
 /// タップ時の動作を決める。画面表示から切り離して単体テストする。
@@ -18,6 +20,8 @@ enum LaunchPlanner {
             return plan(forURL: raw)
         case .feature(let feature):
             return feature.state.canOpen ? .openFeature(feature) : .explainUnavailable(feature)
+        case .folder:
+            return .openFolder
         }
     }
 

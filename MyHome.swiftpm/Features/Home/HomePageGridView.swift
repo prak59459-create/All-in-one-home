@@ -6,12 +6,27 @@ import SwiftUI
 struct HomePageGridView: View {
     let page: HomePage
     let pageIndex: Int
+    @Environment(HomeStore.self) private var store
+    @Environment(AppRouter.self) private var router
 
     var body: some View {
         GeometryReader { proxy in
             ScrollView(.vertical) {
                 pageContent(width: proxy.size.width)
+                    .frame(minHeight: proxy.size.height, alignment: .top)
+                    .contentShape(Rectangle())
+                    // 項目の上以外に落とした時はこのページの末尾へ
+                    .dropDestination(for: String.self) { droppedIDs, _ in
+                        moveDropped(droppedIDs)
+                    }
             }
+        }
+    }
+
+    private func moveDropped(_ droppedIDs: [String]) -> Bool {
+        guard let movingID = droppedIDs.first else { return false }
+        return DropMover.perform(store: store, router: router) { store in
+            try store.move(itemID: movingID, to: .page(pageIndex))
         }
     }
 

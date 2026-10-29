@@ -26,6 +26,8 @@ struct DockRow: View {
     let items: [HomeItem]
     let iconSize: CGFloat
     let spacing: CGFloat
+    @Environment(HomeStore.self) private var store
+    @Environment(AppRouter.self) private var router
 
     var body: some View {
         HStack(spacing: spacing) {
@@ -36,6 +38,17 @@ struct DockRow: View {
         .padding(.horizontal, DesignTokens.Spacing.medium)
         .padding(.vertical, DesignTokens.Spacing.small)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
+        // 項目の上以外に落とした時は Dock の末尾へ（F0083、F0100）
+        .dropDestination(for: String.self) { droppedIDs, _ in
+            moveDropped(droppedIDs)
+        }
+    }
+
+    private func moveDropped(_ droppedIDs: [String]) -> Bool {
+        guard let movingID = droppedIDs.first else { return false }
+        return DropMover.perform(store: store, router: router) { store in
+            try store.move(itemID: movingID, to: .dock)
+        }
     }
 }
 

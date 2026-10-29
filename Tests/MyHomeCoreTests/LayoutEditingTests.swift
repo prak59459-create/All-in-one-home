@@ -80,16 +80,40 @@ final class LayoutEditingTests: XCTestCase {
         XCTAssertEqual(layout.dock.map(\.id), ["c", "a", "b"])
     }
 
-    func testMoveAcrossContainersIsRejected() {
-        var layout: HomeLayout = PersistenceFixtures.layout(pages: [[a], [b]], dock: [c])
-        XCTAssertThrowsError(try layout.moveItem(id: "a", onto: "b")) { error in
-            XCTAssertEqual(error as? LayoutEditError, .differentContainer)
-        }
-        XCTAssertThrowsError(try layout.moveItem(id: "a", onto: "c")) { error in
-            XCTAssertEqual(error as? LayoutEditError, .differentContainer)
-        }
+    func testMoveOntoItemInOtherPageOrDock() throws {
+        var layout: HomeLayout = PersistenceFixtures.layout(pages: [[a], [b, c]], dock: [d])
+        try layout.moveItem(id: "a", onto: "c")
+        XCTAssertEqual(ids(layout, page: 1), ["b", "a", "c"], "別のページの項目に重ねると、その位置に入る")
+        try layout.moveItem(id: "b", onto: "d")
+        XCTAssertEqual(layout.dock.map(\.id), ["b", "d"])
         XCTAssertThrowsError(try layout.moveItem(id: "a", onto: "missing")) { error in
             XCTAssertEqual(error as? LayoutEditError, .itemNotFound)
+        }
+    }
+
+    func testMoveIntoFullDockIsRejected() {
+        let dock: [HomeItem] = (0..<HomeLayout.maximumDockItems).map { (index: Int) -> HomeItem in PersistenceFixtures.link("d\(index)") }
+        var layout: HomeLayout = PersistenceFixtures.layout(pages: [[a]], dock: dock)
+        XCTAssertThrowsError(try layout.moveItem(id: "a", onto: "d0")) { error in
+            XCTAssertEqual(error as? LayoutEditError, .dockFull)
+        }
+        XCTAssertThrowsError(try layout.moveItem(id: "a", to: .dock)) { error in
+            XCTAssertEqual(error as? LayoutEditError, .dockFull)
+        }
+        try? layout.moveItem(id: "d0", onto: "d3")
+        XCTAssertEqual(layout.dock.count, HomeLayout.maximumDockItems, "Dock の中の並べ替えはできる")
+    }
+
+    func testMoveToDestinationEnd() throws {
+        var layout: HomeLayout = PersistenceFixtures.layout(pages: [[a, b], [c]], dock: [d])
+        try layout.moveItem(id: "a", to: .page(1))
+        XCTAssertEqual(ids(layout, page: 1), ["c", "a"])
+        try layout.moveItem(id: "d", to: .page(0))
+        XCTAssertEqual(ids(layout, page: 0), ["b", "d"])
+        try layout.moveItem(id: "b", to: .dock)
+        XCTAssertEqual(layout.dock.map(\.id), ["b"])
+        XCTAssertThrowsError(try layout.moveItem(id: "b", to: .page(9))) { error in
+            XCTAssertEqual(error as? LayoutEditError, .pageNotFound)
         }
     }
 

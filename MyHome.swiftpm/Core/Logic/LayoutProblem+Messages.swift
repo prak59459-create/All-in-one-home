@@ -15,6 +15,8 @@ extension LayoutProblem {
             return "項目の ID が重複しています（\(LayoutProblem.shortened(id))）。"
         case .textTooLong(let itemID):
             return "項目（\(LayoutProblem.shortened(itemID))）の名前・記号名・URL のどれかが長すぎます。"
+        case .nestedFolder(let itemID):
+            return "フォルダの中にフォルダ（\(LayoutProblem.shortened(itemID))）があります。"
         }
     }
 
