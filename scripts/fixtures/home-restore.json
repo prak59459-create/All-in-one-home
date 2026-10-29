@@ -1,0 +1,46 @@
+{
+  "layout" : {
+    "dock" : [
+      {
+        "action" : { "feature" : "settings", "kind" : "feature" },
+        "id" : "feature.settings",
+        "symbolName" : "gearshape.fill",
+        "tint" : "#6B7280",
+        "title" : "設定"
+      }
+    ],
+    "pages" : [
+      {
+        "id" : "page.restore",
+        "items" : [
+          {
+            "action" : { "kind" : "url", "url" : "https://www.swift.org" },
+            "id" : "user.restore-1",
+            "symbolName" : "star.fill",
+            "tint" : "#16A34A",
+            "title" : "復元テスト1"
+          },
+          {
+            "action" : { "kind" : "url", "url" : "https://example.com" },
+            "id" : "user.restore-2",
+            "symbolName" : "heart.fill",
+            "tint" : "#DC2626",
+            "title" : "復元テスト2"
+          },
+          {
+            "action" : { "feature" : "aiAssistant", "kind" : "feature" },
+            "id" : "feature.aiAssistant",
+            "symbolName" : "sparkles",
+            "tint" : "#7C3AED",
+            "title" : "AI"
+          }
+        ]
+      }
+    ]
+  },
+  "schemaVersion" : 1,
+  "settings" : {
+    "appearance" : "dark",
+    "themeID" : "forest"
+  }
+}

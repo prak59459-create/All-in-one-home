@@ -9,7 +9,7 @@ struct PagedGridView: View {
     var body: some View {
         TabView(selection: $selection) {
             ForEach(pages.indices, id: \.self) { index in
-                HomePageGridView(page: pages[index])
+                HomePageGridView(page: pages[index], pageIndex: index)
                     .tag(index)
             }
         }

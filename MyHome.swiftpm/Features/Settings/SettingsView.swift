@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 設定（Phase 1 はテーマと外観のみ）。保存はまだ行わないことを画面でも示す。
+/// 設定（テーマと外観）。変更は自動で保存し、保存の状態も表示する（F0807、F0838）。
 @MainActor
 struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
@@ -13,11 +13,7 @@ struct SettingsView: View {
                     ThemePickerView()
                 }
                 appearanceSection
-                Section {
-                    Text("設定はまだ保存されません。アプリを終了すると初期値に戻ります（Phase 2 で保存に対応）。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
+                SaveStatusSection()
             }
             .navigationTitle("設定")
             .toolbar {

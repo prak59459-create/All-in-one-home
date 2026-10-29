@@ -1,10 +1,11 @@
 import SwiftUI
 
 /// 項目をタップした後のシートとダイアログ。外部 URL は確認してから開き（F0070、F0854）、
-/// 開けなかった時はその旨を表示する（F0784）。
+/// 開けなかった時はその旨を表示する（F0784）。項目の削除の確認（F0042）もここで出す。
 @MainActor
 struct LaunchPresentationModifier: ViewModifier {
     @Bindable var router: AppRouter
+    @Environment(HomeStore.self) private var store
     @Environment(\.openURL) private var openURL
 
     func body(content: Content) -> some View {
@@ -31,8 +32,23 @@ struct LaunchPresentationModifier: ViewModifier {
                 open(checked)
             }
             Button("キャンセル", role: .cancel) {}
-        case .message:
+        case .confirmRemoval(let item):
+            Button("削除", role: .destructive) {
+                remove(item)
+            }
+            Button("キャンセル", role: .cancel) {}
+        case .message, .notice:
             Button("OK", role: .cancel) {}
+        }
+    }
+
+    private func remove(_ item: HomeItem) {
+        do {
+            try store.remove(itemID: item.id)
+        } catch let error as LayoutEditError {
+            router.showNotice(title: "削除できません", message: error.message)
+        } catch {
+            router.showNotice(title: "削除できません", message: "もう一度お試しください。")
         }
     }
 

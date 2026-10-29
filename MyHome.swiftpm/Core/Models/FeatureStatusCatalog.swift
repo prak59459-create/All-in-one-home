@@ -15,9 +15,10 @@ enum FeatureStatusCatalog {
 
     private static func available() -> [FeatureStatusEntry] {
         let entries: [FeatureStatusEntry] = [
-            entry("home", "ホーム画面（時計・アイコン・ページ・Dock）", .available, "表示と起動のみ。配置の編集は Phase 2 で対応します。"),
-            entry("links", "Web リンク・URL スキームの起動", .available, "開く前に確認します。危険なスキームは開きません。"),
-            entry("theme", "テーマ（4種類、ライト / ダーク）", .available, "設定はまだ保存されません（Phase 2 で対応）。")
+            entry("home", "ホーム画面（時計・アイコン・ページ・Dock）", .available, "アイコンを長押しすると編集できます。"),
+            entry("links", "Web リンク・URL スキームの起動と登録", .available, "開く前に確認します。危険なスキームは開かず、登録もできません。"),
+            entry("theme", "テーマ（4種類、ライト / ダーク）", .available, "変更は自動で保存します。"),
+            entry("edit", "配置の編集・保存", .available, "項目の追加・削除と、同じページ（または Dock）の中での並べ替え。再起動後も復元します。")
         ]
         return entries
     }
@@ -31,8 +32,7 @@ enum FeatureStatusCatalog {
 
     private static func planned() -> [FeatureStatusEntry] {
         let entries: [FeatureStatusEntry] = [
-            entry("edit", "配置の編集・保存", .planned(phase: 2), "アイコンの移動・追加・削除と、再起動後の復元。"),
-            entry("folders", "フォルダ・ページの追加と削除", .planned(phase: 3), ""),
+            entry("folders", "フォルダ・ページの追加と削除、ページをまたぐ移動、取り消し", .planned(phase: 3), ""),
             entry("widgets", "ウィジェット・壁紙画像・タイマー", .planned(phase: 4), "アプリ内のウィジェットです。"),
             entry("miniapps", "メモ・電卓などのミニアプリ", .planned(phase: 5), ""),
             entry("weather", "天気", .planned(phase: 7), "天気 API は未設定です。"),

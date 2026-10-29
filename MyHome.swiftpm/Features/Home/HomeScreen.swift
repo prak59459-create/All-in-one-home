@@ -26,21 +26,35 @@ struct HomeScreen: View {
 
     private var content: some View {
         VStack(spacing: DesignTokens.Spacing.medium) {
-            ClockHeaderView()
+            header
+            SaveStatusBanner()
             PagedGridView(pages: store.layout.pages, selection: $pageIndex)
             PageIndicatorView(count: store.layout.pages.count, selection: $pageIndex)
             DockView(items: store.layout.dock)
         }
         .padding(.vertical, DesignTokens.Spacing.medium)
     }
+
+    /// 編集中は時計を薄くし、その上に編集のバーを重ねる（グリッドの位置が動かないようにする）。
+    private var header: some View {
+        ClockHeaderView()
+            .opacity(router.isEditing ? 0.3 : 1)
+            .overlay(alignment: .top) {
+                if router.isEditing {
+                    EditModeBar(pageIndex: pageIndex)
+                }
+            }
+    }
 }
 
 @MainActor
 struct HomeScreen_Previews: PreviewProvider {
     static var previews: some View {
-        HomeScreen()
-            .environment(HomeStore())
-            .environment(SettingsStore())
+        let boot: AppBootstrap = AppBootstrap.make(storage: PreviewArchiveStorage())
+        return HomeScreen()
+            .environment(boot.home)
+            .environment(boot.settings)
+            .environment(boot.persistence)
             .environment(AppRouter())
     }
 }

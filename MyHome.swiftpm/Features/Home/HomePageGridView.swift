@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 struct HomePageGridView: View {
     let page: HomePage
+    let pageIndex: Int
 
     var body: some View {
         GeometryReader { proxy in
@@ -17,7 +18,7 @@ struct HomePageGridView: View {
     @ViewBuilder
     private func pageContent(width: CGFloat) -> some View {
         if page.items.isEmpty {
-            EmptyPageView()
+            EmptyPageView(pageIndex: pageIndex)
                 .frame(width: width)
                 .padding(.top, DesignTokens.Spacing.xLarge)
         } else {
@@ -41,22 +42,32 @@ struct HomePageGridView: View {
     }
 }
 
-/// 項目がないページの説明（F0988）。
+/// 項目がないページの説明と、追加の入口（F0988、F0041）。
 @MainActor
 struct EmptyPageView: View {
+    let pageIndex: Int
     @Environment(\.homePalette) private var palette
+    @Environment(AppRouter.self) private var router
 
     var body: some View {
-        VStack(spacing: DesignTokens.Spacing.small) {
-            Image(systemName: "square.dashed")
-                .font(.largeTitle)
-            Text("このページには項目がありません")
-                .font(.headline)
-            Text("項目の追加は Phase 2 で対応します。")
-                .font(.footnote)
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            VStack(spacing: DesignTokens.Spacing.small) {
+                Image(systemName: "square.dashed")
+                    .font(.largeTitle)
+                    .accessibilityHidden(true)
+                Text("このページには項目がありません")
+                    .font(.headline)
+            }
+            .foregroundStyle(palette.label.color)
+            .accessibilityElement(children: .combine)
+            Button {
+                router.beginEditing()
+                router.presentAddItem(pageIndex: pageIndex)
+            } label: {
+                Label("項目を追加", systemImage: "plus")
+            }
+            .buttonStyle(.borderedProminent)
         }
-        .foregroundStyle(palette.label.color)
         .multilineTextAlignment(.center)
-        .accessibilityElement(children: .combine)
     }
 }

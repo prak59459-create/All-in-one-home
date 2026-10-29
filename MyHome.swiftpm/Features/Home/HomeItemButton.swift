@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// ホーム画面の1項目。タップ後に何をするかは AppRouter（LaunchPlanner）が決める。
+/// 編集中はボタンにせず、並べ替えと削除の操作だけを受け付ける。
 @MainActor
 struct HomeItemButton: View {
     let item: HomeItem
@@ -8,20 +9,30 @@ struct HomeItemButton: View {
     @Environment(\.homePalette) private var palette
 
     var body: some View {
-        Button {
-            router.launch(item)
-        } label: {
-            // IconTile の下側にも Icon.badgeInset の余白があるので、名前との間隔は小さくする
-            VStack(spacing: DesignTokens.Spacing.xSmall) {
-                IconTile(symbolName: item.symbolName, tint: item.tint, badge: item.badge, size: DesignTokens.Icon.size)
-                title
+        if router.isEditing {
+            content
+                .modifier(EditingItemModifier(item: item, iconSize: DesignTokens.Icon.size))
+        } else {
+            Button {
+                router.launch(item)
+            } label: {
+                content
             }
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
+            .buttonStyle(IconPressStyle())
+            .modifier(ItemContextMenuModifier(item: item))
+            .accessibilityLabel(item.title)
+            .accessibilityHint(item.accessibilityHint)
         }
-        .buttonStyle(IconPressStyle())
-        .accessibilityLabel(item.title)
-        .accessibilityHint(item.accessibilityHint)
+    }
+
+    private var content: some View {
+        // IconTile の下側にも Icon.badgeInset の余白があるので、名前との間隔は小さくする
+        VStack(spacing: DesignTokens.Spacing.xSmall) {
+            EditableIconTile(item: item, size: DesignTokens.Icon.size)
+            title
+        }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 
     private var title: some View {

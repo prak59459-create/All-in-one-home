@@ -1,7 +1,7 @@
 /// 大量の項目で表示が破綻しないかを確かめる検証用レイアウト。起動引数で指定した時だけ使う（LaunchOptions）。
 enum SampleLayout {
-    /// 一度に作る項目数の上限（検証用でもメモリを使いすぎないようにする）。
-    static let maximumItemCount: Int = 2000
+    /// 一度に作る項目数の上限（検証用でもメモリを使いすぎないようにする）。Dock と合わせて保存できる上限に収める。
+    static let maximumItemCount: Int = LayoutLimits.maximumItems - DefaultLayout.dock().count
 
     static func stress(itemCount: Int, itemsPerPage: Int) -> HomeLayout {
         let count: Int = min(max(itemCount, 0), maximumItemCount)

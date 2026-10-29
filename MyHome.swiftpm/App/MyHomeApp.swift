@@ -1,20 +1,41 @@
 import SwiftUI
 
-/// アプリの入口。起動時に作るのはホーム画面の状態（配置・設定・画面遷移）だけで、
+/// アプリの入口。起動時に作るのはホーム画面の状態（配置・設定・保存・画面遷移）だけで、
 /// AI・天気・画像処理などの重いものは作らない（PLAN.md「ローカル LLM の方針」）。
 @main
 @MainActor
 struct MyHomeApp: App {
-    @State private var homeStore = HomeStore(layout: LaunchOptions.current().initialLayout())
-    @State private var settings = SettingsStore()
-    @State private var router = AppRouter()
+    @State private var homeStore: HomeStore
+    @State private var settings: SettingsStore
+    @State private var persistence: PersistenceController
+    @State private var router: AppRouter
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        let boot: AppBootstrap = AppBootstrap.make(options: LaunchOptions.current())
+        let router = AppRouter()
+        if let notice = boot.startupNotice {
+            router.showNotice(title: "保存データについて", message: notice)
+        }
+        _homeStore = State(initialValue: boot.home)
+        _settings = State(initialValue: boot.settings)
+        _persistence = State(initialValue: boot.persistence)
+        _router = State(initialValue: router)
+    }
 
     var body: some Scene {
         WindowGroup {
             HomeScreen()
                 .environment(homeStore)
                 .environment(settings)
+                .environment(persistence)
                 .environment(router)
+                .onChange(of: scenePhase) { _, phase in
+                    // 裏に回る時は待たずに保存する（F0837。裏に回った後は OS が止めることがある）
+                    if phase != .active {
+                        Task { await persistence.flush() }
+                    }
+                }
         }
     }
 }

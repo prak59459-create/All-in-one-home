@@ -22,8 +22,13 @@ struct LaunchOptions: Hashable, Sendable {
 
     /// 起動時に表示するレイアウト。検証用の指定がなければ初期レイアウト。
     func initialLayout() -> HomeLayout {
+        sampleLayout() ?? DefaultLayout.make()
+    }
+
+    /// 検証用の配置。指定がなければ nil（保存データを読む）。
+    func sampleLayout() -> HomeLayout? {
         guard let count = sampleItemCount else {
-            return DefaultLayout.make()
+            return nil
         }
         return SampleLayout.stress(itemCount: count, itemsPerPage: sampleItemsPerPage)
     }

@@ -18,6 +18,8 @@ struct FeatureSheetView: View {
             FeatureDestinationView(feature: feature)
         case .unavailable(let feature):
             UnavailableFeatureView(feature: feature)
+        case .addItem(let pageIndex):
+            AddItemView(pageIndex: pageIndex)
         }
     }
 }

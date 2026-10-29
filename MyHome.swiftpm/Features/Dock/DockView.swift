@@ -39,7 +39,7 @@ struct DockRow: View {
     }
 }
 
-/// Dock の1項目。名前は表示せず、読み上げで伝える。
+/// Dock の1項目。名前は表示せず、読み上げで伝える。編集中は Dock の中で並べ替えと削除ができる。
 @MainActor
 struct DockItemButton: View {
     let item: HomeItem
@@ -47,13 +47,19 @@ struct DockItemButton: View {
     @Environment(AppRouter.self) private var router
 
     var body: some View {
-        Button {
-            router.launch(item)
-        } label: {
-            IconTile(symbolName: item.symbolName, tint: item.tint, badge: item.badge, size: iconSize)
+        if router.isEditing {
+            EditableIconTile(item: item, size: iconSize)
+                .modifier(EditingItemModifier(item: item, iconSize: iconSize))
+        } else {
+            Button {
+                router.launch(item)
+            } label: {
+                EditableIconTile(item: item, size: iconSize)
+            }
+            .buttonStyle(IconPressStyle())
+            .modifier(ItemContextMenuModifier(item: item))
+            .accessibilityLabel(item.title)
+            .accessibilityHint(item.accessibilityHint)
         }
-        .buttonStyle(IconPressStyle())
-        .accessibilityLabel(item.title)
-        .accessibilityHint(item.accessibilityHint)
     }
 }

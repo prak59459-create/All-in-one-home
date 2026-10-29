@@ -1,5 +1,5 @@
 /// ホーム画面・Dock に置く1項目。
-struct HomeItem: Identifiable, Hashable, Sendable {
+struct HomeItem: Identifiable, Hashable, Codable, Sendable {
     let id: String
     var title: String
     /// SF Symbols の名前。

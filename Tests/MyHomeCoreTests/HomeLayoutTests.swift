@@ -55,7 +55,7 @@ final class HomeLayoutTests: XCTestCase {
 
     func testStressLayoutIsCapped() {
         let layout: HomeLayout = SampleLayout.stress(itemCount: 1_000_000, itemsPerPage: 500)
-        XCTAssertEqual(layout.itemCount, SampleLayout.maximumItemCount + DefaultLayout.dock().count)
+        XCTAssertEqual(layout.itemCount, LayoutLimits.maximumItems, "Dock と合わせて保存できる上限に収める")
     }
 
     @MainActor

@@ -1,5 +1,5 @@
 /// 外観の指定。system は端末のライト / ダーク設定に従う。
-enum ThemeAppearance: String, CaseIterable, Sendable {
+enum ThemeAppearance: String, CaseIterable, Codable, Sendable {
     case system
     case light
     case dark

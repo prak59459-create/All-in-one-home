@@ -1,11 +1,11 @@
 /// ホーム画面の1ページ。
-struct HomePage: Identifiable, Hashable, Sendable {
+struct HomePage: Identifiable, Hashable, Codable, Sendable {
     let id: String
     var items: [HomeItem]
 }
 
 /// ホーム画面全体の配置（ページと Dock）。
-struct HomeLayout: Hashable, Sendable {
+struct HomeLayout: Hashable, Codable, Sendable {
     var pages: [HomePage]
     var dock: [HomeItem]
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# ビルド済みアプリを iOS Simulator にインストールし、次の3通りで起動して、それぞれ数秒後もプロセスが動いているか確認する。macOS 専用。
-#   default : 初期レイアウト
-#   empty   : 項目 0 件（-MyHomeSampleItems 0）
+# ビルド済みアプリを iOS Simulator にインストールし、次の5通りで起動して、それぞれ数秒後もプロセスが動いているか確認する。macOS 専用。
+#   default : 初期レイアウト（保存ファイルなし）
+#   empty   : 項目 0 件（-MyHomeSampleItems 0。検証用の起動なので保存しない）
 #   many    : 1ページに 150 件（-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150）
+#   restore : 保存ファイル（scripts/fixtures/home-restore.json）を置いて起動し、その配置で復元されるか（T2-7）
+#   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
 
@@ -54,9 +56,42 @@ launch_case() {
 "
 }
 
+# record_check <名前> <PASS/FAIL> <説明>
+record_check() {
+  if [ "$2" != "PASS" ]; then
+    echo "::error::${1}: ${3}"
+    STATUS=1
+  fi
+  echo "${1}: ${2}（${3}）"
+  RESULT_LINES="${RESULT_LINES}- ${1}: ${2}（${3}）
+"
+}
+
 launch_case default
 launch_case empty -MyHomeSampleItems 0
 launch_case many -MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150
+
+# 保存先はアプリのデータ領域の Library/Application Support/MyHome/home.json（FileHomeArchiveStorage）
+DATA_DIR="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)/Library/Application Support/MyHome"
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+mkdir -p "$DATA_DIR"
+cp "$ROOT/scripts/fixtures/home-restore.json" "$DATA_DIR/home.json"
+launch_case restore
+if [ -f "$DATA_DIR/home.json" ] && [ -z "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
+  record_check restore-file PASS "保存ファイルを読み込めた（別名に退避されていない。表示は restore.png）"
+else
+  record_check restore-file FAIL "保存ファイルが読み込めず、別名に退避された"
+fi
+
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+printf '{ broken' > "$DATA_DIR/home.json"
+launch_case broken
+if [ -n "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
+  record_check broken-file PASS "壊れたファイルを消さずに別名で残した（説明の表示は broken.png）"
+else
+  record_check broken-file FAIL "壊れたファイルが別名で残っていない"
+fi
+cp -R "$DATA_DIR" "$OUT/saved-data" 2>/dev/null || true
 
 find "$HOME/Library/Logs/DiagnosticReports" -name 'MyHome*' -newer "$OUT/launch-default.txt" -exec cp {} "$OUT/" \; 2>/dev/null || true
 xcrun simctl shutdown "$UDID" 2>/dev/null || true
