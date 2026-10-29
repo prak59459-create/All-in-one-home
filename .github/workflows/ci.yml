@@ -67,14 +67,6 @@ jobs:
           xcodebuild -version
           swift --version
           sysctl -n machdep.cpu.brand_string hw.ncpu || true
-      - name: マニフェスト API の確認（使えるプレースホルダーアイコン）
-        run: |
-          API="$(find "$(xcode-select -p)/.." -path '*AppleProductTypes*' -name '*.swiftinterface' 2>/dev/null | head -n 1)"
-          echo "AppleProductTypes: ${API:-見つかりません}"
-          if [ -n "$API" ]; then
-            awk '/enum PlaceholderIcon/,/^ *}/' "$API" | grep -E '^ *case ' | tr -s ' ' | tr '\n' ' ' || true
-            echo
-          fi
       - name: スキーム一覧
         working-directory: MyHome.swiftpm
         run: xcodebuild -list

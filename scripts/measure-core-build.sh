@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # MyHomeCore（UI に依存しない層）のビルド時間を計測し、単体テストを実行する。Linux / macOS 共通。
-# 計測: クリーンビルド / 変更なし再ビルド / Core 1ファイル変更後の増分ビルド / テストビルド / テスト実行
+# 計測: クリーンビルド（1回）/ 変更なし再ビルド・Core 1ファイル変更後の増分ビルド（各 REPEAT 回の中央値）/ テストビルド / テスト実行
 #
 # 使い方:
 #   scripts/measure-core-build.sh
@@ -15,8 +15,14 @@ cd "$(dirname "$0")/.."
 
 LOG_DIR="${LOG_DIR:-build-logs/core}"
 SLOW_MS="${SLOW_MS:-50}"
-PROBE_FILE="${PROBE_FILE:-MyHome.swiftpm/Core/AppInfo.swift}"
+REPEAT="${REPEAT:-3}"
+# 多くのファイルが参照する型のファイルに、毎回違うコメントを書き足して計る（インターフェースは変わらない小変更）。
+PROBE_FILE="${PROBE_FILE:-MyHome.swiftpm/Core/Models/HomeItem.swift}"
 mkdir -p "$LOG_DIR"
+
+touch_probe() {
+  printf '\n// incremental build probe %s-%s\n' "$(date +%s)" "$1" >> "$PROBE_FILE"
+}
 
 SLOW_FLAGS=(-Xswiftc -Xfrontend -Xswiftc "-warn-long-function-bodies=$SLOW_MS"
   -Xswiftc -Xfrontend -Xswiftc "-warn-long-expression-type-checking=$SLOW_MS")
@@ -35,10 +41,9 @@ restore_probe() { cp "$BACKUP" "$PROBE_FILE"; }
 trap 'status=$?; restore_probe; rm -f "$BACKUP"; exit $status' EXIT
 
 rm -rf .build
-timed clean "クリーンビルド（MyHomeCore）" swift build "${FLAGS[@]}"
-timed noop "変更なし再ビルド" swift build "${FLAGS[@]}"
-printf '\n// incremental build probe %s\n' "$(date +%s)" >> "$PROBE_FILE"
-timed incremental "増分ビルド（Core 1ファイル変更）" swift build "${FLAGS[@]}"
+timed clean "クリーンビルド（MyHomeCore、1回）" swift build "${FLAGS[@]}"
+timed_median noop "変更なし再ビルド" "$REPEAT" - swift build "${FLAGS[@]}"
+timed_median incremental "増分ビルド（Core 1ファイル変更）" "$REPEAT" touch_probe swift build "${FLAGS[@]}"
 restore_probe
 timed test-build "テストのビルド" swift build --build-tests "${TEST_FLAGS[@]}"
 timed test-run "テスト実行" swift test --skip-build

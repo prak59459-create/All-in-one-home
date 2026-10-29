@@ -33,6 +33,34 @@ timed() {
   echo "$label: ${secs}s"
 }
 
+# timed_median <ログ名> <表示名> <回数> <準備関数 または -> <コマンド...>
+# 毎回「準備関数 回目」を呼んでからコマンドの時間を計り、中央値（最小–最大、回数）を結果表に追加する。
+timed_median() {
+  local key="$1" label="$2" count="$3" prepare="$4"
+  shift 4
+  local samples="" i=1 log start end secs summary
+  while [ "$i" -le "$count" ]; do
+    if [ "$prepare" != "-" ]; then
+      "$prepare" "$i"
+    fi
+    log="$LOG_DIR/$key-$i.log"
+    start="$(now)"
+    if ! "$@" >"$log" 2>&1; then
+      echo "::error::${label} が失敗しました（ログ: ${log}）"
+      tail -n 120 "$log"
+      exit 1
+    fi
+    end="$(now)"
+    secs="$(awk -v s="$start" -v e="$end" 'BEGIN { printf "%.2f", e - s }')"
+    samples="$samples $secs"
+    i=$((i + 1))
+  done
+  summary="$(printf '%s\n' $samples | sort -n | awk '{ a[NR] = $1 } END { m = (NR % 2) ? a[(NR + 1) / 2] : (a[NR / 2] + a[NR / 2 + 1]) / 2; printf "%.2f（%s–%s、%d回）", m, a[1], a[NR], NR }')"
+  RESULT_ROWS="$RESULT_ROWS| $label | $summary |
+"
+  echo "$label: $summary"
+}
+
 # 遅い型チェック警告（-warn-long-function-bodies / -warn-long-expression-type-checking）を時間の降順で表示する。
 report_slow_type_checks() {
   local log="$1" limit="$2"
@@ -56,7 +84,7 @@ print_summary() {
   local body
   body="## $title
 
-| 計測項目 | 秒 |
+| 計測項目 | 秒（複数回は中央値） |
 |---|---|
 $RESULT_ROWS
 $extra"
