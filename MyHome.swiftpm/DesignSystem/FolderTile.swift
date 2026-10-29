@@ -55,16 +55,24 @@ struct FolderTile: View {
 }
 
 /// 項目の種類に応じたアイコン（通常の項目は IconTile、フォルダは FolderTile）。
+/// 画像が設定されていても、ファイルがない・読めない時は記号で表示する（F0827）。
 @MainActor
 struct ItemTile: View {
     let item: HomeItem
     let size: CGFloat
+    @Environment(\.imageStore) private var imageStore
 
     var body: some View {
         if let children = item.folderItems {
             FolderTile(items: children, size: size)
         } else {
-            IconTile(symbolName: item.symbolName, tint: item.tint, badge: item.badge, size: size)
+            IconTile(
+                symbolName: item.symbolName,
+                tint: item.tint,
+                badge: item.badge,
+                size: size,
+                image: ImageCache.shared.image(named: item.imageName, in: imageStore)
+            )
         }
     }
 }

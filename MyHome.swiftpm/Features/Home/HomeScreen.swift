@@ -8,17 +8,19 @@ struct HomeScreen: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(AppRouter.self) private var router
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.imageStore) private var imageStore
     @State private var pageIndex: Int = 0
 
     var body: some View {
         ZStack {
-            WallpaperView(palette: palette)
+            WallpaperView(palette: palette, wallpaper: settings.wallpaper)
             content
             if let folderID = router.openFolderID {
                 FolderOverlayView(folderID: folderID)
             }
         }
-        .environment(\.homePalette, palette)
+        .environment(\.homePalette, isImageWallpaper ? palette.forImageWallpaper : palette)
+        .environment(\.isImageWallpaper, isImageWallpaper)
         .preferredColorScheme(settings.appearance.colorScheme)
         .modifier(LaunchPresentationModifier(router: router))
         .onChange(of: store.layout.pages.count) { _, count in
@@ -31,6 +33,12 @@ struct HomeScreen: View {
 
     private var palette: ThemePalette {
         settings.theme.palette(isDark: colorScheme == .dark)
+    }
+
+    /// 画像の壁紙を表示しているか（ファイルがなければグラデーションなので false）。
+    private var isImageWallpaper: Bool {
+        guard let name = settings.wallpaper.imageFileName else { return false }
+        return imageStore?.exists(name) ?? false
     }
 
     private var content: some View {
@@ -46,7 +54,7 @@ struct HomeScreen: View {
 
     /// 編集中は時計を薄くし、その上に編集のバーを重ねる（グリッドの位置が動かないようにする）。
     private var header: some View {
-        ClockHeaderView()
+        ClockHeaderView(showsSeconds: settings.showsSeconds)
             .opacity(router.isEditing ? 0.3 : 1)
             .overlay(alignment: .top) {
                 if router.isEditing {
@@ -64,6 +72,7 @@ struct HomeScreen_Previews: PreviewProvider {
             .environment(boot.home)
             .environment(boot.settings)
             .environment(boot.persistence)
+            .environment(boot.timers)
             .environment(AppRouter())
     }
 }

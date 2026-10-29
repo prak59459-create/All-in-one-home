@@ -32,7 +32,7 @@ final class LaunchTests: XCTestCase {
     func testAccessibilityHintsMentionState() {
         XCTAssertTrue(item(.openURL("https://example.com")).accessibilityHint.contains("確認"))
         XCTAssertTrue(item(.feature(.aiAssistant)).accessibilityHint.contains("スタブ"))
-        XCTAssertTrue(item(.feature(.timer)).accessibilityHint.contains("準備中"))
+        XCTAssertTrue(item(.feature(.calculator)).accessibilityHint.contains("準備中"))
     }
 
     @MainActor
@@ -68,8 +68,10 @@ final class LaunchTests: XCTestCase {
         let router = AppRouter()
         router.launch(item(.feature(.featureStatus)))
         XCTAssertEqual(router.sheet, .feature(.featureStatus))
+        router.launch(item(.feature(.calculator)))
+        XCTAssertEqual(router.sheet, .unavailable(.calculator))
         router.launch(item(.feature(.timer)))
-        XCTAssertEqual(router.sheet, .unavailable(.timer))
+        XCTAssertEqual(router.sheet, .feature(.timer), "タイマーは Phase 4 で使えるようになった")
     }
 
     func testLaunchOptionsParseSampleArguments() {

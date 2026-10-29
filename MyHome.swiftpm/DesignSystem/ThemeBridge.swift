@@ -28,3 +28,37 @@ extension EnvironmentValues {
         set { self[HomePaletteKey.self] = newValue }
     }
 }
+
+private struct ImageWallpaperKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    /// 壁紙が画像か。画像の上では文字を白にして影を付け、読みやすくする（F0979 の考え方を写真にも当てはめる）。
+    var isImageWallpaper: Bool {
+        get { self[ImageWallpaperKey.self] }
+        set { self[ImageWallpaperKey.self] = newValue }
+    }
+}
+
+extension ThemePalette {
+    /// 画像の壁紙の上で使う配色（文字は白。画像の明るさは選べないので、影と暗さの調整で読みやすさを保つ）。
+    var forImageWallpaper: ThemePalette {
+        ThemePalette(wallpaperTop: wallpaperTop, wallpaperBottom: wallpaperBottom, label: .white, accent: accent)
+    }
+}
+
+/// 画像の壁紙の上の文字に影を付ける。
+@MainActor
+struct LegibleOnWallpaper: ViewModifier {
+    @Environment(\.isImageWallpaper) private var isImageWallpaper
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isImageWallpaper {
+            content.shadow(color: Color.black.opacity(0.6), radius: 3, x: 0, y: 1)
+        } else {
+            content
+        }
+    }
+}

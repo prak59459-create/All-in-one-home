@@ -77,6 +77,41 @@
             "tint": "#2563EB",
             "title": "ページの項目"
           }
+        ],
+        "widgets": [
+          {
+            "id": "widget.check-clock",
+            "kind": {
+              "clock": {
+                "isAnalog": true,
+                "showsSeconds": false
+              },
+              "type": "clock"
+            },
+            "size": "medium"
+          },
+          {
+            "id": "widget.check-calendar",
+            "kind": {
+              "type": "calendar"
+            },
+            "size": "small"
+          },
+          {
+            "id": "widget.check-note",
+            "kind": {
+              "text": "ウィジェットの確認用メモ",
+              "type": "note"
+            },
+            "size": "small"
+          },
+          {
+            "id": "widget.check-timer",
+            "kind": {
+              "type": "timer"
+            },
+            "size": "small"
+          }
         ]
       },
       {
@@ -85,7 +120,7 @@
       }
     ]
   },
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "settings": {
     "appearance": "light",
     "themeID": "sunset"

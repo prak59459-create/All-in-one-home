@@ -17,6 +17,8 @@ extension LayoutProblem {
             return "項目（\(LayoutProblem.shortened(itemID))）の名前・記号名・URL のどれかが長すぎます。"
         case .nestedFolder(let itemID):
             return "フォルダの中にフォルダ（\(LayoutProblem.shortened(itemID))）があります。"
+        case .invalidWidget(let id):
+            return "ウィジェット（\(LayoutProblem.shortened(id))）の ID・内容・数に問題があります。"
         }
     }
 

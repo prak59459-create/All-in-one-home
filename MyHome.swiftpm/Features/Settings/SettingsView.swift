@@ -13,6 +13,8 @@ struct SettingsView: View {
                     ThemePickerView()
                 }
                 appearanceSection
+                WallpaperSettingsSection()
+                clockSection
                 SaveStatusSection()
                 Section("ソフトウェア") {
                     NavigationLink("ソフトウェアアップデート") {
@@ -29,6 +31,13 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+    }
+
+    private var clockSection: some View {
+        @Bindable var bindable = settings
+        return Section("時計") {
+            Toggle("ホーム画面の時計に秒を表示", isOn: $bindable.showsSeconds)
         }
     }
 

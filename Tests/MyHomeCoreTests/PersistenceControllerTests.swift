@@ -70,7 +70,7 @@ final class PersistenceControllerTests: XCTestCase {
         let controller = PersistenceController(storage: nil, disabledReason: "検証用")
         let home = HomeStore()
         let settings = SettingsStore()
-        controller.attach(home: home, settings: settings)
+        controller.attach(home: home, settings: settings, timers: TimerStore())
         settings.appearance = .dark
         await controller.flush()
         XCTAssertEqual(controller.status, .disabled("検証用"))

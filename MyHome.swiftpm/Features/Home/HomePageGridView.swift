@@ -32,11 +32,21 @@ struct HomePageGridView: View {
 
     @ViewBuilder
     private func pageContent(width: CGFloat) -> some View {
-        if page.items.isEmpty {
+        VStack(spacing: 0) {
+            if !page.widgets.isEmpty {
+                WidgetRow(widgets: page.widgets)
+            }
+            itemsContent(width: width)
+        }
+    }
+
+    @ViewBuilder
+    private func itemsContent(width: CGFloat) -> some View {
+        if page.items.isEmpty && page.widgets.isEmpty {
             EmptyPageView(pageIndex: pageIndex)
                 .frame(width: width)
                 .padding(.top, DesignTokens.Spacing.xLarge)
-        } else {
+        } else if !page.items.isEmpty {
             LazyVGrid(columns: columns(for: width), spacing: DesignTokens.Grid.rowSpacing) {
                 ForEach(page.items) { item in
                     HomeItemButton(item: item)

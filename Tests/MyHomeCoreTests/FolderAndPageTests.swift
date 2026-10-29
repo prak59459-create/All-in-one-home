@@ -96,13 +96,14 @@ final class FolderAndPageTests: XCTestCase {
 
     func testUpdateItemChangesLooksOnly() throws {
         var layout: HomeLayout = try folderLayout()
-        try layout.updateItem(id: "a", title: "新しい名前", symbolName: "star.fill", tint: RGBAColor(hex: 0x16A34A))
+        try layout.updateItem(id: "a", title: "新しい名前", symbolName: "star.fill", tint: RGBAColor(hex: 0x16A34A), imageName: "icon.jpg")
         let updated: HomeItem? = layout.item(id: "a")
         XCTAssertEqual(updated?.title, "新しい名前")
         XCTAssertEqual(updated?.symbolName, "star.fill")
         XCTAssertEqual(updated?.action, a.action, "リンク先は変えない")
+        XCTAssertEqual(updated?.imageName, "icon.jpg")
         let long: String = String(repeating: "長", count: LayoutLimits.maximumTitleLength + 1)
-        XCTAssertThrowsError(try layout.updateItem(id: "f", title: long, symbolName: "x", tint: .black)) { error in
+        XCTAssertThrowsError(try layout.updateItem(id: "f", title: long, symbolName: "x", tint: .black, imageName: nil)) { error in
             XCTAssertEqual(error as? LayoutEditError, .titleTooLong)
         }
     }

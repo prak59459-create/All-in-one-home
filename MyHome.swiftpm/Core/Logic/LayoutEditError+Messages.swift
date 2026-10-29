@@ -22,7 +22,9 @@ extension LayoutEditError {
         case .lastPage:
             return "最後の1ページは削除できません。"
         case .pageNotEmpty:
-            return "項目が残っているページは削除できません。先に項目を別のページへ移すか、削除してください。"
+            return "項目やウィジェットが残っているページは削除できません。先に別のページへ移すか、削除してください。"
+        case .widgetLimitReached:
+            return "1ページに置けるウィジェットは \(WidgetLimits.maximumPerPage) 個までです。"
         }
     }
 }

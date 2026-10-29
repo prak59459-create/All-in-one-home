@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// 項目の追加（F0041）。Web リンク・URL スキーム（F0068、F0069）か、アプリ内の機能を選ぶ。
+/// 項目の追加（F0041）。Web リンク・URL スキーム（F0068、F0069）、アプリ内の機能、ウィジェット（F0162）から選ぶ。
 /// 追加先は、編集を始めたページの末尾。
 @MainActor
 struct AddItemView: View {
     enum Kind: String, CaseIterable, Identifiable {
         case link = "リンク"
         case feature = "アプリ内の機能"
+        case widget = "ウィジェット"
 
         var id: String { rawValue }
     }
@@ -47,6 +48,10 @@ struct AddItemView: View {
             AddLinkForm(draft: $draft)
         case .feature:
             AddFeatureList(onAdd: add)
+        case .widget:
+            AddWidgetList(pageIndex: pageIndex) {
+                dismiss()
+            }
         }
     }
 

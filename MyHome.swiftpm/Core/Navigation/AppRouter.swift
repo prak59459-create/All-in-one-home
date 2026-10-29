@@ -10,6 +10,8 @@ enum AppSheet: Identifiable, Hashable, Sendable {
     case editItem(String)
     /// ページの管理（追加・削除・並べ替え）。
     case managePages
+    /// ウィジェットの設定（ウィジェット ID）。
+    case editWidget(String)
 
     var id: String {
         switch self {
@@ -18,6 +20,7 @@ enum AppSheet: Identifiable, Hashable, Sendable {
         case .addItem(let pageIndex): return "add.\(pageIndex)"
         case .editItem(let itemID): return "edit.\(itemID)"
         case .managePages: return "pages"
+        case .editWidget(let widgetID): return "widget.\(widgetID)"
         }
     }
 }
@@ -30,6 +33,8 @@ enum AppAlert: Hashable, Sendable {
     case confirmRemoval(HomeItem)
     /// 起動時の説明など、操作の結果ではないお知らせ。
     case notice(title: String, message: String)
+    /// ウィジェットの削除の確認（F0163）。
+    case confirmWidgetRemoval(HomeWidget)
 
     var title: String {
         switch self {
@@ -38,6 +43,7 @@ enum AppAlert: Hashable, Sendable {
         case .confirmRemoval(let item):
             return item.isFolder ? "フォルダ「\(item.title)」を解除しますか？" : "「\(item.title)」を削除しますか？"
         case .notice(let title, _): return title
+        case .confirmWidgetRemoval(let widget): return "ウィジェット「\(widget.kind.title)」を削除しますか？"
         }
     }
 
@@ -51,6 +57,7 @@ enum AppAlert: Hashable, Sendable {
             }
             return "ホーム画面から取り除きます。リンク先の Web ページや他のアプリには影響しません。"
         case .notice(_, let message): return message
+        case .confirmWidgetRemoval: return "ホーム画面から取り除きます。メモの内容も消えます（取り消しで戻せます）。"
         }
     }
 }
@@ -92,6 +99,14 @@ final class AppRouter {
 
     func presentPageManager() {
         sheet = .managePages
+    }
+
+    func presentWidgetEditor(_ widget: HomeWidget) {
+        sheet = .editWidget(widget.id)
+    }
+
+    func requestWidgetRemoval(_ widget: HomeWidget) {
+        alert = .confirmWidgetRemoval(widget)
     }
 
     /// フォルダを開く（編集中でも開ける。中の項目の並べ替えや取り出しのため）。

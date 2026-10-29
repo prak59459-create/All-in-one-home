@@ -6,6 +6,8 @@ struct HomeItem: Identifiable, Hashable, Codable, Sendable {
     var symbolName: String
     var tint: RGBAColor
     var action: HomeItemAction
+    /// アイコンの画像（Phase 4。Application Support/MyHome/Images の中のファイル名）。なければ記号を表示する（F0047）。
+    var imageName: String? = nil
 }
 
 /// 項目をタップした時の動作。

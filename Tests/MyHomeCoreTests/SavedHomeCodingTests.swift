@@ -83,6 +83,7 @@ final class SavedHomeCodingTests: XCTestCase {
         let saved: SavedHome = try HomeArchiveCodec.decode(try fixture("home-folder.json"))
         XCTAssertEqual(saved.layout.item(id: "folder.check")?.folderItems?.count, 3)
         XCTAssertEqual(saved.layout.pages.count, 2)
+        XCTAssertEqual(saved.layout.pages[0].widgets.count, 4, "ウィジェットの表示もスクリーンショットで確かめる")
     }
 
     func testDecodedLayoutIsNormalized() throws {

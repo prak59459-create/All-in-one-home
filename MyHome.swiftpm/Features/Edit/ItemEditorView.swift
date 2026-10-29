@@ -10,6 +10,7 @@ struct ItemEditorView: View {
     @State private var title: String = ""
     @State private var symbolName: String = ""
     @State private var tint: RGBAColor = .black
+    @State private var imageName: String?
     @State private var isLoaded: Bool = false
     @State private var isConfirmingRemoval: Bool = false
     @State private var failure: String?
@@ -31,6 +32,9 @@ struct ItemEditorView: View {
         if let item = store.layout.item(id: itemID) {
             Form {
                 ItemLooksSection(item: item, title: $title, symbolName: $symbolName, tint: $tint)
+                if !item.isFolder {
+                    ItemImageSection(imageName: $imageName, tint: tint, symbolName: symbolName)
+                }
                 ItemMoveSection(item: item, onDone: finish)
                 removalSection(for: item)
                 if let failure {
@@ -81,12 +85,13 @@ struct ItemEditorView: View {
         title = item.title
         symbolName = item.symbolName
         tint = item.tint
+        imageName = item.imageName
         isLoaded = true
     }
 
     private func save() {
         let trimmed: String = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        perform { try store.update(itemID: itemID, title: trimmed, symbolName: symbolName, tint: tint) }
+        perform { try store.update(itemID: itemID, title: trimmed, symbolName: symbolName, tint: tint, imageName: imageName) }
     }
 
     private func remove(_ item: HomeItem) {

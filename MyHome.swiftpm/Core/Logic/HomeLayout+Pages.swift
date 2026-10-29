@@ -9,11 +9,11 @@ extension HomeLayout {
         return pages.count - 1
     }
 
-    /// 空のページだけを削除できる（項目を失わないため）。最後の1ページは残す。
+    /// 空のページ（項目もウィジェットもない）だけを削除できる（失わないため）。最後の1ページは残す。
     mutating func removePage(at index: Int) throws {
         guard pages.indices.contains(index) else { throw LayoutEditError.pageNotFound }
         guard pages.count > 1 else { throw LayoutEditError.lastPage }
-        guard pages[index].items.isEmpty else { throw LayoutEditError.pageNotEmpty }
+        guard pages[index].items.isEmpty, pages[index].widgets.isEmpty else { throw LayoutEditError.pageNotEmpty }
         pages.remove(at: index)
     }
 

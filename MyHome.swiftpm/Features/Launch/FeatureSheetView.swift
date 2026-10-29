@@ -24,6 +24,8 @@ struct FeatureSheetView: View {
             ItemEditorView(itemID: itemID)
         case .managePages:
             PageManagerView()
+        case .editWidget(let widgetID):
+            WidgetEditorView(widgetID: widgetID)
         }
     }
 }
@@ -40,7 +42,9 @@ struct FeatureDestinationView: View {
             FeatureStatusView()
         case .aiAssistant:
             AIStubChatView()
-        case .notes, .calculator, .timer:
+        case .timer:
+            TimerAppView()
+        case .notes, .calculator:
             UnavailableFeatureView(feature: feature)
         }
     }

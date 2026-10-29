@@ -50,6 +50,13 @@ enum DesignTokens {
         static let timeSize: CGFloat = 72
     }
 
+    enum Widget {
+        static let smallWidth: CGFloat = 170
+        /// 中は小2つ分と、その間の間隔。
+        static let mediumWidth: CGFloat = 352
+        static let height: CGFloat = 170
+    }
+
     enum Swatch {
         static let width: CGFloat = 72
         static let height: CGFloat = 96

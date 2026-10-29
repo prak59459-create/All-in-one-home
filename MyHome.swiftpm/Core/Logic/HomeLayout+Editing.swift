@@ -14,8 +14,10 @@ enum LayoutEditError: Error, Hashable, Sendable {
     case pageLimitReached
     /// 最後の1ページは削除できない。
     case lastPage
-    /// 項目が残っているページは削除できない（項目を失わないため）。
+    /// 項目やウィジェットが残っているページは削除できない（失わないため）。
     case pageNotEmpty
+    /// 1ページに置けるウィジェットの数を超える（WidgetLimits.maximumPerPage）。
+    case widgetLimitReached
 }
 
 /// 項目が置かれている場所。
@@ -83,14 +85,15 @@ extension HomeLayout {
         return removed
     }
 
-    /// 名前・記号・色を変える（F0044、F0046、F0050）。動作（リンク先など）は変えない。
-    mutating func updateItem(id: String, title: String, symbolName: String, tint: RGBAColor) throws {
+    /// 名前・記号・色・画像を変える（F0044、F0046、F0047、F0050）。動作（リンク先など）は変えない。
+    mutating func updateItem(id: String, title: String, symbolName: String, tint: RGBAColor, imageName: String?) throws {
         guard title.count <= LayoutLimits.maximumTitleLength else { throw LayoutEditError.titleTooLong }
         guard let location = location(ofItem: id) else { throw LayoutEditError.itemNotFound }
         var list: [HomeItem] = items(in: location.container)
         list[location.index].title = title
         list[location.index].symbolName = symbolName
         list[location.index].tint = tint
+        list[location.index].imageName = imageName
         setItems(list, in: location.container)
     }
 

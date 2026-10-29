@@ -1,7 +1,28 @@
-/// ホーム画面の1ページ。
+/// ホーム画面の1ページ。上部にウィジェット（Phase 4）、その下にアイコンを並べる。
 struct HomePage: Identifiable, Hashable, Codable, Sendable {
     let id: String
     var items: [HomeItem]
+    var widgets: [HomeWidget] = []
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case items
+        case widgets
+    }
+
+    init(id: String, items: [HomeItem], widgets: [HomeWidget] = []) {
+        self.id = id
+        self.items = items
+        self.widgets = widgets
+    }
+
+    /// 版 2 以前のファイルには widgets がないので、なければ空にする。
+    init(from decoder: Decoder) throws {
+        let container: KeyedDecodingContainer<CodingKeys> = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        items = try container.decode([HomeItem].self, forKey: .items)
+        widgets = try container.decodeIfPresent([HomeWidget].self, forKey: .widgets) ?? []
+    }
 }
 
 /// ホーム画面全体の配置（ページと Dock）。

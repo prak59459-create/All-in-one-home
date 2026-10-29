@@ -10,6 +10,8 @@ enum LayoutProblem: Hashable, Sendable {
     case textTooLong(itemID: String)
     /// フォルダの中にフォルダがある（階層は1段まで。F0156、F0157）。
     case nestedFolder(itemID: String)
+    /// ウィジェットの ID が不正・重複、またはメモが長すぎる・1ページの数が多すぎる。
+    case invalidWidget(String)
 }
 
 /// 読み込んだ配置の構造を確かめる（F0821、F0824）。
@@ -30,7 +32,32 @@ enum LayoutValidator {
         }
         problems.append(contentsOf: pageProblems(in: layout.pages))
         problems.append(contentsOf: itemProblems(in: layout))
+        problems.append(contentsOf: widgetProblems(in: layout))
         return Array(problems.prefix(maximumReportedProblems))
+    }
+
+    private static func widgetProblems(in layout: HomeLayout) -> [LayoutProblem] {
+        var problems: [LayoutProblem] = []
+        var seen: Set<String> = []
+        for page in layout.pages {
+            if page.widgets.count > WidgetLimits.maximumPerPage {
+                problems.append(.invalidWidget(page.id))
+            }
+            for widget in page.widgets {
+                let duplicate: Bool = !seen.insert(widget.id).inserted || layout.location(ofItem: widget.id) != nil
+                if !isValidID(widget.id) || duplicate || hasTooLongNote(widget) {
+                    problems.append(.invalidWidget(widget.id))
+                }
+            }
+        }
+        return problems
+    }
+
+    private static func hasTooLongNote(_ widget: HomeWidget) -> Bool {
+        if case .note(let text) = widget.kind {
+            return text.count > WidgetLimits.maximumNoteLength
+        }
+        return false
     }
 
     private static func pageProblems(in pages: [HomePage]) -> [LayoutProblem] {
@@ -97,6 +124,9 @@ enum LayoutValidator {
             return true
         }
         if item.symbolName.count > LayoutLimits.maximumSymbolNameLength {
+            return true
+        }
+        if let imageName = item.imageName, imageName.count > LayoutLimits.maximumIDLength {
             return true
         }
         if case .openURL(let url) = item.action, url.count > LayoutLimits.maximumURLLength {

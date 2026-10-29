@@ -20,9 +20,8 @@ enum AppFeature: String, CaseIterable, Codable, Sendable {
 
     var state: FeatureState {
         switch self {
-        case .settings, .featureStatus: return .available
+        case .settings, .featureStatus, .timer: return .available
         case .aiAssistant: return .stub
-        case .timer: return .planned(phase: 4)
         case .notes, .calculator: return .planned(phase: 5)
         }
     }
@@ -30,14 +29,12 @@ enum AppFeature: String, CaseIterable, Codable, Sendable {
     /// 開けない機能をタップした時に表示する説明。
     var unavailableDetail: String {
         switch self {
-        case .settings, .featureStatus, .aiAssistant:
+        case .settings, .featureStatus, .aiAssistant, .timer:
             return "この機能は利用できます。"
         case .notes:
             return "メモは Phase 5 でミニアプリとして実装する予定です（保存の仕組みは Phase 2 で用意済み）。"
         case .calculator:
             return "電卓は Phase 5 でミニアプリとして実装する予定です。"
-        case .timer:
-            return "タイマーは Phase 4 で実装する予定です。アプリを閉じている間の計測や通知には OS の制限があります。"
         }
     }
 }

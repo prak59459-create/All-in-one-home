@@ -42,5 +42,6 @@ struct HomeItemButton: View {
             .lineLimit(1)
             .truncationMode(.tail)
             .frame(maxWidth: DesignTokens.Icon.labelWidth)
+            .modifier(LegibleOnWallpaper())
     }
 }

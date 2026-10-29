@@ -42,8 +42,26 @@ final class HomeStore {
         try edit { layout in try layout.moveItem(id: itemID, to: destination) }
     }
 
-    func update(itemID: String, title: String, symbolName: String, tint: RGBAColor) throws {
-        try edit { layout in try layout.updateItem(id: itemID, title: title, symbolName: symbolName, tint: tint) }
+    func update(itemID: String, title: String, symbolName: String, tint: RGBAColor, imageName: String?) throws {
+        try edit { layout in
+            try layout.updateItem(id: itemID, title: title, symbolName: symbolName, tint: tint, imageName: imageName)
+        }
+    }
+
+    func addWidget(_ widget: HomeWidget, toPage pageIndex: Int) throws {
+        try edit { layout in try layout.addWidget(widget, toPage: pageIndex) }
+    }
+
+    func removeWidget(id: String) throws {
+        try edit { layout in try layout.removeWidget(id: id) }
+    }
+
+    func moveWidget(id: String, by offset: Int) throws {
+        try edit { layout in try layout.moveWidget(id: id, by: offset) }
+    }
+
+    func updateWidget(id: String, kind: WidgetKind, size: WidgetSize) throws {
+        try edit { layout in try layout.updateWidget(id: id, kind: kind, size: size) }
     }
 
     func makeFolder(containing itemID: String, folderID: String) throws {

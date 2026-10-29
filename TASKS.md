@@ -71,15 +71,34 @@ Phase 3 で決めたこと:
 - フォルダはシートではなくホーム画面の上に重ねて表示する。フォルダの中から開いたリンクの確認や機能のシートを、ホーム画面からそのまま出せるようにするため。
 - 取り消しの履歴は保存しない（再起動すると消える）。
 
-## ソフトウェアアップデート（ユーザーの依頼で追加。実装済み・テスト済 / ビルド確認中）
+## Phase 4 — 壁紙・アイコン画像・ウィジェット・タイマー（実装済み・テスト済 / ビルド確認中。実機での操作は未確認）
+
+| タスクID | 内容 | 状態 | 関連機能ID |
+|---|---|---|---|
+| T4-1 | 壁紙: 写真を選んで（PhotosPicker。写真へのアクセスの許可は不要）画面に合う大きさに縮小して保存、ぼかし・暗さの調整、テーマの背景に戻す。画像の上では文字を白にして影を付ける。ファイルがなければグラデーションに戻す | テスト済（保存・整理）/ ビルド確認中（画面） | F0646, F0647, F0650, F0651, F0827 |
+| T4-2 | アイコンの画像: 編集シートで写真を選び、中央を正方形に切り出して小さく保存。外すと記号に戻る | テスト済（保存）/ ビルド確認中（画面） | F0047, F0048 |
+| T4-3 | アプリ内ウィジェット: 時計（デジタル / アナログ、秒の表示）、今月のカレンダー（週の始まりは端末の設定）、メモ、タイマー。ページの上部に置き、追加・削除・並べ替え・大きさ（小・中）の変更。1ページ 8 個まで | テスト済（配置・保存）/ ビルド確認中（画面） | F0161–F0168, F0179, F0189, F0202, F0203, F0241, F0243, F0260 |
+| T4-4 | タイマー: 複数のカウントダウン（名前、よく使う時間）、ストップウォッチ（ラップ）。終了時刻を覚えるので、裏に回っていても戻った時に正しい残り時間。開いている間は終了時に音と知らせ | テスト済（時刻を進めたテスト）/ ビルド確認中（画面） | F0218–F0227, F0237 |
+| T4-5 | ホーム画面の時計の秒の表示 | ビルド確認中 | F0203 |
+| T4-6 | 保存形式の版 3（ウィジェット・項目の画像・壁紙・タイマー）。版 1・2 のファイルはそのまま読み、増えた値は初期値。使われていない画像は、読み込みに成功した起動の時だけ消す | テスト済 | F0805, F0806, F0811, F0823 |
+
+Phase 4 で決めたこと:
+
+- iPadOS のホーム画面に置くウィジェット（WidgetKit）と、iPadOS の壁紙の変更は作らない（前者は要PoC、後者は OS の制限）。アプリ内のものだけ。
+- タイマーは、アプリを閉じている間は音を鳴らせない（通知の許可を使う方法は Phase 10 の通知の項目で検討）。
+- 写真は選んだ1枚だけを受け取る方式にし、写真へのアクセスの許可を求めない。
+
+## ソフトウェアアップデート（ユーザーの依頼で追加。実装済み・テスト済 / ビルド済。実機での操作は未確認）
+
+ecc196f の CI で、iOS 18 SDK（Xcode 16.4）・iOS 26 SDK（Xcode 26.3）のビルドと Simulator の起動テストが通った。
 
 | 内容 | 状態 | 場所 |
 |---|---|---|
 | GitHub のブランチ一覧、コミットのファイル一覧、CI の結果の取得 | テスト済（固定の応答） | `Core/Update/GitHubUpdateClient.swift`, `CommitCheckStatus.swift` |
 | 手元との比較（git のブロブのハッシュ。SHA-1 は自前で実装し、git の値で検証） | テスト済 | `Core/Update/SHA1.swift`, `UpdatePlanner.swift` |
-| 書き込み先の確認（.swiftpm、Package.swift、識別ファイル。コピーは断る） | テスト済（確認の部分）/ ビルド確認中（フォルダの選択） | `Core/Update/PackageVerifier.swift`, `Features/Update/PackageAccess.swift` |
+| 書き込み先の確認（.swiftpm、Package.swift、識別ファイル。コピーは断る） | テスト済（確認の部分）/ ビルド済（フォルダの選択） | `Core/Update/PackageVerifier.swift`, `Features/Update/PackageAccess.swift` |
 | 全部取得してハッシュを確かめてから、退避して書き込む。途中で失敗したら戻す。元に戻す | テスト済（1〜4 回目の書き込みで失敗させても元のまま、元に戻すと完全に元通り） | `Core/Update/UpdateInstaller.swift` |
-| iCloud Drive / Swift Playgrounds と同時に使っても壊さない書き込み（NSFileCoordinator） | ビルド確認中 | `Features/Update/CoordinatedPackageFileSystem.swift` |
+| iCloud Drive / Swift Playgrounds と同時に使っても壊さない書き込み（NSFileCoordinator） | ビルド済 | `Features/Update/CoordinatedPackageFileSystem.swift` |
 | 書き込んだコミットでビルドされたかの表示（BuildStamp） | テスト済 | `Core/BuildStamp.swift`, `Core/Update/UpdateState.swift` |
 
 制限: アプリ自身はビルドし直せない（書き込んだ後は Swift Playgrounds で実行し直す）。iPad の実機では未確認（フォルダの選択、iCloud Drive への書き込み、Swift Playgrounds が開いている時の書き込み）。
@@ -236,11 +255,45 @@ iPad の Swift Playgrounds で作る一般のアプリとしての分類。**OS�
   Tests/MyHomeCoreTests/FolderAndPageTests.swift・UndoTests.swift ほか、scripts/smoke-test-simulator.sh、scripts/fixtures/home-folder.json
 実装した機能: ページの管理、ページ・Dock・フォルダをまたぐ移動（ドラッグと移動先の選択）、フォルダ（作成・出し入れ・解除・1段まで）、
   名前・記号・色の変更、取り消し・やり直し、保存形式の版 2 と版 1 からの移行
-ビルド結果: Linux（Core）PASS / macOS（Xcode 16.4・26.3）は PR の CI で確認 / iPad NOT RUN
-テスト結果: 155件 PASS（Swift 5.10.1。6.0.3 / 6.4.1 は CI で確認）
+ビルド結果: Linux（Core）PASS / macOS（Xcode 16.4・26.3）PASS（f574871 の CI）/ iPad NOT RUN
+テスト結果: 155件 PASS（Swift 5.10.1 / 6.0.3 / 6.4.1）、Simulator 起動 PASS（編集モードとフォルダを開いた状態をスクリーンショットで確認）
 既知の制限: ドラッグでのページ間移動（ページの点に重ねる）は実機で未確認。フォルダの中からのドラッグでの取り出しはできない（編集シートを使う）。
   取り消しの履歴は保存しない
 次に行う最小タスク: T4-1（壁紙の選択）
+```
+
+### ソフトウェアアップデート（2026-10-29、ユーザーの依頼で追加）
+
+```text
+変更ファイル: MyHome.swiftpm/Core/Update/**、Core/PackageIdentity.swift、Core/BuildStamp.swift、MyHome.swiftpm/Features/Update/**、
+  Features/Settings/SettingsView.swift、Tests/MyHomeCoreTests/SoftwareUpdateTests.swift・UpdateTestSupport.swift、docs/BUILD.md
+実装した機能: 設定 → ソフトウェアアップデート。GitHub のブランチを選び、手元の MyHome.swiftpm と比べて変わったファイルだけを書き込む。
+  書き込み先の確認、取得したファイルのハッシュの照合、退避と失敗時の巻き戻し、最後の更新の前に戻す、CI が通っていないコミットの確認
+ビルド結果: Linux（Core）PASS / macOS（Xcode 16.4・26.3）PASS（ecc196f の CI）/ iPad NOT RUN
+テスト結果: 177件 PASS（Swift 5.10.1 / 6.0.3 / 6.4.1）、Simulator 起動 PASS
+既知の制限: アプリ自身はビルドし直せない（書き込んだ後は Swift Playgrounds で開き直して実行する）。フォルダの選択・iCloud Drive への書き込みは実機で未確認。
+  この機能が入っていない版からは、最初の1回だけ手動で入れ替える必要がある
+```
+
+### Phase 4（2026-10-29）
+
+```text
+タスクID: T4-1〜T4-6
+変更ファイル: MyHome.swiftpm/Core/Models/HomeWidget.swift・WallpaperSetting.swift・TimerModels.swift・HomeItem.swift・HomeLayout.swift、
+  Core/Logic/HomeLayout+Widgets.swift・MonthGrid.swift・TimerValidator.swift・LayoutValidator.swift、Core/Store/TimerStore.swift・SettingsStore.swift・HomeStore.swift、
+  Core/Persistence/*（形式の版 3、ImageFileStore.swift）、Core/Navigation/AppRouter.swift、
+  DesignSystem/IconTile.swift・FolderTile.swift・WallpaperView.swift・ThemeBridge.swift・DesignTokens.swift、
+  Features/Widgets/**、Features/Timer/**、Features/Media/ImageSupport.swift、Features/Settings/WallpaperSettingsSection.swift、
+  Features/Edit/ItemImageSection.swift・ItemEditorView.swift・AddItemView.swift、Features/Home/*、Features/Launch/*、App/MyHomeApp.swift、
+  Tests/MyHomeCoreTests/WidgetAndWallpaperTests.swift・TimerTests.swift・ImageFileStoreTests.swift ほか、scripts/fixtures/home-folder.json
+実装した機能: 写真の壁紙（ぼかし・暗さ）、アイコンの画像、アプリ内ウィジェット（デジタル / アナログ時計、今月のカレンダー、メモ、タイマー）、
+  タイマー（複数のカウントダウンとストップウォッチ）、ホーム画面の時計の秒の表示、保存形式の版 3
+ビルド結果: Linux（Core）PASS / macOS（Xcode 16.4・26.3）は PR の CI で確認 / iPad NOT RUN
+テスト結果: 202件 PASS（Swift 5.10.1）。遅い型チェック（50ms 超）0 件
+初回/増分ビルド時間: Linux 5.10.1 クリーン 7.73 秒、HomeItem.swift 変更の増分 2.24 秒（アプリ本体の Swift 8,615 行、123 ファイル: Core 68 / UI 55）
+既知の制限: アプリを閉じている間はタイマーの音が鳴らない（iPadOS の制限。戻った時に知らせる）。iPadOS のホーム画面のウィジェットと壁紙は変えられない。
+  写真の選択・ウィジェットの操作は実機で未確認。ウィジェットの「大」（F0168）はない
+次に行う最小タスク: T5-1（メモのミニアプリ）
 ```
 
 ## 機能カタログの分類（62 カテゴリ / 1,740 項目）
@@ -352,7 +405,7 @@ iPad の Swift Playgrounds で作る一般のアプリとしての分類。**OS�
 | F0801–F0803, F0807 | レイアウト・ページ・アイコン・テーマの保存 | テスト済 / ビルド済 | `Core/Persistence/`。`Application Support/MyHome/home.json` |
 | F0821 | 不正 JSON の拒否 | テスト済 / ビルド済 | 元のファイルは `home.unreadable-<時刻>.json` に残す |
 | F0822 | 未知フィールドの扱い | テスト済 | 読み飛ばす。設定の読めない値は初期値へ |
-| F0823 | 古い形式の移行 | 部分 | 移行の入口（`HomeArchiveCodec.migrate`）のみ。版 1 しかないので変換はまだない。新しい版のデータは上書きせず退避 |
+| F0823 | 古い形式の移行 | テスト済 / ビルド済 | 版 1（Phase 2）・版 2（Phase 3）のファイルを版 3 として読む（増えた値は初期値）。Simulator では版 1 のファイルからの復元を確認。新しい版のデータは上書きせず退避 |
 | F0824 | ID 重複の検出 | テスト済 | ページ ID・項目 ID |
 | F0834 | 保存エラーの通知 | テスト済 / ビルド済 | ホーム画面の帯と設定画面。再試行できる |
 | F0835 | 保存処理の競合防止 | テスト済 | actor で順番に実行し、古い内容で新しい内容を上書きしない |
@@ -382,15 +435,37 @@ iPad の Swift Playgrounds で作る一般のアプリとしての分類。**OS�
 | F0156, F0157 | フォルダの階層制限・循環参照の防止 | テスト済 | 1段まで。保存データの検証でも拒否 |
 | F0160 | フォルダ操作の取り消し | テスト済 | 取り消しは全操作が対象 |
 
+### 壁紙・画像・ウィジェット・タイマー（Phase 4）
+
+画面は PR の CI でビルドと起動を確認する。写真の選択やタップの操作は実機での確認待ち。
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
+|---|---|---|---|
+| F0047, F0048 | カスタム画像アイコン / 写真から画像を選択 | テスト済（保存）/ 画面は確認中 | `Features/Edit/ItemImageSection.swift`。PhotosPicker（写真へのアクセスの許可は不要）。中央を正方形に切り出して 256px に |
+| F0161, F0162 | ウィジェットギャラリー / 追加 | テスト済 / 画面は確認中 | 「項目を追加」の「ウィジェット」。1ページ 8 個まで |
+| F0163, F0164, F0165 | ウィジェットの削除・移動・サイズ変更 | テスト済 / 画面は確認中 | 編集中の − と、ウィジェットの設定シート。移動は同じページの中の前後 |
+| F0166, F0167 | 小 / 中サイズ | 画面は確認中 | 大（F0168）はない |
+| F0179, F0189 | ウィジェットの編集メニュー / 設定の保存 | テスト済 / 画面は確認中 | `Features/Widgets/WidgetEditorView.swift` |
+| F0202, F0203 | アナログ時計 / 秒表示 | 画面は確認中 | ウィジェットとホーム画面の時計。秒を表示する時だけ1秒ごとに描き直す |
+| F0204, F0205 | 12 / 24 時間表示 | 対応 | 端末の設定に従う（アプリの中の切り替えはない） |
+| F0218–F0224, F0227 | タイマーの作成・開始・一時停止・再開・リセット・複数・名前・カウントダウン | テスト済 / 画面は確認中 | `Core/Store/TimerStore.swift`、`Features/Timer/TimerAppView.swift`。終了時刻を覚えるので、戻った時の残り時間は正しい |
+| F0225, F0226 | ストップウォッチ / ラップ | テスト済 / 画面は確認中 | |
+| F0237 | バックグラウンド時の制限説明 | 画面は確認中 | 閉じている間は音が鳴らないことをタイマーの画面に表示 |
+| F0241, F0243, F0260 | 月間カレンダー / 今日の強調 / 週の始まり | テスト済 / 画面は確認中 | `Core/Logic/MonthGrid.swift`。週の始まりは端末の設定 |
+| F0647, F0650, F0651 | 壁紙の画像 / 明るさ / ぼかし | テスト済（保存）/ 画面は確認中 | `Features/Settings/WallpaperSettingsSection.swift`。長辺 2,800px に縮小して保存 |
+| F0678 | 描画負荷の軽減 | 部分 | 画像は縮小して保存し、読み込んだものはメモリに 120 枚まで置く |
+| F0805, F0806, F0811 | ウィジェット・壁紙・タイマーの保存 | テスト済 | 保存形式の版 3 |
+| F0827 | 画像ファイル欠損の検出 | テスト済 / 画面は確認中 | なければ記号・グラデーションで表示。使われていない画像は、読み込みに成功した起動の時だけ消す |
+
 ### 時計・外観
 
 | 機能ID | 名称 | 状態 | 場所・備考 |
 |---|---|---|---|
-| F0201 | デジタル時計 | ビルド済 | `Features/Home/ClockHeaderView.swift`（1分ごとに更新） |
+| F0201 | デジタル時計 | ビルド済 | `Features/Home/ClockHeaderView.swift`（1分ごとに更新。秒を表示する時は1秒ごと） |
 | F0206, F0207 | 日付 / 曜日表示 | ビルド済 | |
 | F0641, F0642, F0643 | ライト / ダーク / システム連動 | ビルド済 | 設定は自動で保存（Phase 2） |
 | F0645 | 複数のカラーパレット | テスト済 / ビルド済 | `Core/Models/ThemeCatalog.swift` |
-| F0646 | 背景グラデーション | ビルド済 | `DesignSystem/WallpaperView.swift` |
+| F0646 | 背景グラデーション | ビルド済 | `DesignSystem/WallpaperView.swift`（画像の壁紙がない時・読めない時もこれ） |
 | F0653 | ガラス風マテリアル | ビルド済 | Dock の背景 |
 | F0658 | アイコンのタップ縮小 | ビルド済 | |
 | F0674 | Reduce Motion への配慮 | 部分 | タップ演出とページ移動のアニメーションのみ |
@@ -435,7 +510,7 @@ iPad の Swift Playgrounds で作る一般のアプリとしての分類。**OS�
 | F0888, F0889 | 依存関係・外部パッケージの最小化 | 対応 | 外部パッケージ 0 |
 | F0890, F0891, F0892 | 初期 / 増分ビルドの計測と記録 | 部分 | Linux・macOS は記録済み。iPad は未計測 |
 | F0901 | LazyVGrid の利用 | ビルド済 | |
-| F0902 | 重い処理のメインスレッド回避 | 部分 | 保存のエンコードと書き込みは actor で実行。起動時の読み込みは同期（1MB 未満）。推論はプロバイダー側のタスクで行う設計 |
+| F0902 | 重い処理のメインスレッド回避 | 部分 | 保存のエンコードと書き込みは actor で実行。写真の縮小とアップデートの読み書きはメインスレッドの外。起動時の読み込みは同期（1MB 未満）。推論はプロバイダー側のタスクで行う設計 |
 | F0903, F0904 | 非同期処理、キャンセル可能なタスク | テスト済 | LLM セッション |
 | F0905, F0906 | 無駄な状態更新の削減、描画更新範囲の限定 | 対応 | @Observable、時計は TimelineView 内だけ更新。描画回数の計測はしていない |
 | F0909, F0950 | 大量項目の検証 | テスト済（ロジック）/ ビルド済（150 件で起動・表示） | スクロール操作は未確認 |

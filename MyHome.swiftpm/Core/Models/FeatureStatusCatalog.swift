@@ -20,6 +20,9 @@ enum FeatureStatusCatalog {
             entry("theme", "テーマ（4種類、ライト / ダーク）", .available, "変更は自動で保存します。"),
             entry("edit", "配置の編集・保存", .available, "項目の追加・削除・名前や記号の変更、ページ・Dock・フォルダをまたぐ移動。再起動後も復元します。"),
             entry("folders", "フォルダ・ページの管理・取り消し", .available, "フォルダは1段まで。ページは空の時だけ削除できます。取り消しはアプリを開いている間だけです。"),
+            entry("widgets", "アプリ内ウィジェット（時計・カレンダー・メモ・タイマー）", .available, "ページの上部に置きます。編集中にタップで大きさや表示を変えられます。"),
+            entry("wallpaper", "壁紙の写真・アイコンの画像", .available, "選んだ写真だけを受け取ります（写真へのアクセスの許可は不要）。iPadOS 自体の壁紙は変えられません。"),
+            entry("timer", "タイマー・ストップウォッチ", .available, "アプリを閉じている間は音が鳴りません（iPadOS の制限）。"),
             entry("update", "ソフトウェアアップデート", .available, "設定から。GitHub のブランチから変わったファイルだけを書き込みます。書き込んだ後は Swift Playgrounds で実行し直してください（アプリ自身はビルドし直せません）。")
         ]
         return entries
@@ -34,7 +37,6 @@ enum FeatureStatusCatalog {
 
     private static func planned() -> [FeatureStatusEntry] {
         let entries: [FeatureStatusEntry] = [
-            entry("widgets", "ウィジェット・壁紙画像・タイマー", .planned(phase: 4), "アプリ内のウィジェットです。"),
             entry("miniapps", "メモ・電卓などのミニアプリ", .planned(phase: 5), ""),
             entry("weather", "天気", .planned(phase: 7), "天気 API は未設定です。"),
             entry("backup", "バックアップと復元", .planned(phase: 9), "")

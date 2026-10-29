@@ -37,6 +37,11 @@ struct LaunchPresentationModifier: ViewModifier {
                 remove(item)
             }
             Button("キャンセル", role: .cancel) {}
+        case .confirmWidgetRemoval(let widget):
+            Button("削除", role: .destructive) {
+                try? store.removeWidget(id: widget.id)
+            }
+            Button("キャンセル", role: .cancel) {}
         case .message, .notice:
             Button("OK", role: .cancel) {}
         }

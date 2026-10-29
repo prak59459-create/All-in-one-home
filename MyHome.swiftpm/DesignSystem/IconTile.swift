@@ -9,15 +9,32 @@ struct IconTile: View {
     let tint: RGBAColor
     let badge: HomeItemBadge?
     let size: CGFloat
+    /// アイコンの画像（Phase 4）。あれば記号の代わりに表示する（F0047）。
+    var image: UIImage? = nil
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(tint.color)
-            .overlay { highlight }
-            .overlay { symbol }
+            .overlay { content }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .frame(width: size, height: size)
             .overlay(alignment: .topTrailing) { badgeView }
             .padding(DesignTokens.Icon.badgeInset)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if let image {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .accessibilityHidden(true)
+        } else {
+            ZStack {
+                highlight
+                symbol
+            }
+        }
     }
 
     private var cornerRadius: CGFloat {

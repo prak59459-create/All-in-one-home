@@ -42,14 +42,17 @@ final class PersistenceController {
     }
 
     /// 保存する内容の取り出し方を登録し、ストアの変更を受け取る。
-    func attach(home: HomeStore, settings: SettingsStore) {
+    func attach(home: HomeStore, settings: SettingsStore, timers: TimerStore) {
         snapshot = {
-            SavedHome(layout: home.layout, settings: settings.saved)
+            SavedHome(layout: home.layout, settings: settings.saved, timers: timers.board)
         }
         home.onChange = { [weak self] in
             self?.scheduleSave()
         }
         settings.onChange = { [weak self] in
+            self?.scheduleSave()
+        }
+        timers.onChange = { [weak self] in
             self?.scheduleSave()
         }
     }
