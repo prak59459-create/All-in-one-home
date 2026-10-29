@@ -1,4 +1,5 @@
 # 計測スクリプト共通の関数（source して使う）。bash 3.2（macOS 標準）でも動くように書く。
+# 注意: 変数の直後に全角文字を続ける時は必ず ${var} と書く（bash 3.2 は全角文字を変数名の一部と解釈することがある）。
 
 # 現在時刻（秒、小数3桁）。GNU date が無い環境（macOS）では perl を使う。
 now() {
@@ -21,7 +22,7 @@ timed() {
   local start end secs
   start="$(now)"
   if ! "$@" >"$log" 2>&1; then
-    echo "::error::$label が失敗しました（ログ: $log）"
+    echo "::error::${label} が失敗しました（ログ: ${log}）"
     tail -n 120 "$log"
     exit 1
   fi

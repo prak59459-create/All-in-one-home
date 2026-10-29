@@ -31,7 +31,8 @@ echo "本体の追加フラグ: ${SWIFT_EXTRA_FLAGS:-（なし）} / テスト�
 BACKUP="$(mktemp)"
 cp "$PROBE_FILE" "$BACKUP"
 restore_probe() { cp "$BACKUP" "$PROBE_FILE"; }
-trap 'restore_probe; rm -f "$BACKUP"' EXIT
+# 終了コードを保ったまま後片付けする（trap 内の最後のコマンドの結果で失敗が隠れないように）。
+trap 'status=$?; restore_probe; rm -f "$BACKUP"; exit $status' EXIT
 
 rm -rf .build
 timed clean "クリーンビルド（MyHomeCore）" swift build "${FLAGS[@]}"

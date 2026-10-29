@@ -17,9 +17,10 @@ DD="${DERIVED_DATA:-$ROOT/build/DerivedData}"
 SCHEME="${SCHEME:-MyHome}"
 SLOW_MS="${SLOW_MS:-100}"
 # 計測用に一時的に書き換えるファイル（計測後に元へ戻す）。
-VIEW_PROBE="${VIEW_PROBE:-MyHome.swiftpm/App/MyHomeApp.swift}"
-CORE_PROBE="${CORE_PROBE:-MyHome.swiftpm/Core/AppInfo.swift}"
-DEFAULT_CORE_PROBE_DECL='extension AppInfo { static let buildProbe: Int = 0 }'
+# View: 末端の小さな View（よくある小変更）。Core: 多くのファイルが参照する型（インターフェース変更の最悪寄りの例）。
+VIEW_PROBE="${VIEW_PROBE:-MyHome.swiftpm/Features/Home/PageIndicatorView.swift}"
+CORE_PROBE="${CORE_PROBE:-MyHome.swiftpm/Core/Models/HomeItem.swift}"
+DEFAULT_CORE_PROBE_DECL='extension HomeItem { var buildProbe: Int { 0 } }'
 CORE_PROBE_DECL="${CORE_PROBE_DECL:-$DEFAULT_CORE_PROBE_DECL}"
 
 # 利用可能な iOS Simulator から、最新ランタイムの iPad を選ぶ（なければ任意の iOS デバイス）。
@@ -65,7 +66,8 @@ restore_probes() {
   cp "$VIEW_BACKUP" "$ROOT/$VIEW_PROBE"
   cp "$CORE_BACKUP" "$ROOT/$CORE_PROBE"
 }
-trap 'restore_probes; rm -f "$VIEW_BACKUP" "$CORE_BACKUP"' EXIT
+# 終了コードを保ったまま後片付けする（trap 内の最後のコマンドの結果で失敗が隠れないように）。
+trap 'status=$?; restore_probes; rm -f "$VIEW_BACKUP" "$CORE_BACKUP"; exit $status' EXIT
 
 cd "$ROOT/MyHome.swiftpm"
 rm -rf "$DD"
@@ -79,4 +81,4 @@ restore_probes
 timed restore "元に戻して再ビルド" "${XCB[@]}"
 
 SLOW_REPORT="$(report_slow_type_checks "$LOG_DIR/clean.log" "$SLOW_MS")"
-print_summary "アプリ本体ビルド計測（$(head -n 1 "$LOG_DIR/toolchain.txt")、$SIM_NAME）" "$SLOW_REPORT"
+print_summary "アプリ本体ビルド計測（$(head -n 1 "$LOG_DIR/toolchain.txt")、${SIM_NAME}）" "$SLOW_REPORT"
