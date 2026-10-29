@@ -30,6 +30,9 @@ enum DesignTokens {
 
     enum Grid {
         static let horizontalPadding: CGFloat = 20
+        /// スクロール領域の上下の余白。アイコンの印は上に Icon.badgeOffset だけはみ出すので、それより大きくする
+        /// （余白がないと最上段の印がスクロール領域の端で切れる。Simulator のスクリーンショットで確認）。
+        static let verticalPadding: CGFloat = 12
         static let rowSpacing: CGFloat = 24
     }
 

@@ -48,6 +48,8 @@ SIM_UDID=<UDID> scripts/smoke-test-simulator.sh
 
 GitHub Actions（`.github/workflows/ci.yml` の `app-ios` ジョブ）でも同じスクリプトを Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で実行し、ジョブのサマリーに結果表を出す。スクリーンショットとログはアーティファクト `app-build-logs-xcode-<版>` に保存される。
 
+CI の注意: PR では `paths` の絞り込みが「PR 全体の差分」で判定されるため、文書だけを変えた push でも CI が動く。さらに同じ PR の実行中の CI は新しい push で取り消される（`concurrency`）。計測や起動テストの途中結果が欲しい時は、終わるまで push しない。
+
 ## C. Linux（Core のみ）
 
 [swift.org](https://www.swift.org/install/) の Swift ツールチェーンを入れてから、リポジトリ直下で実行する。

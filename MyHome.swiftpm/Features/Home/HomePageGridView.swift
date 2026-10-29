@@ -27,6 +27,7 @@ struct HomePageGridView: View {
                 }
             }
             .padding(.horizontal, DesignTokens.Grid.horizontalPadding)
+            .padding(.vertical, DesignTokens.Grid.verticalPadding)
         }
     }
 
