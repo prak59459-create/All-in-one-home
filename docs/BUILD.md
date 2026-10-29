@@ -5,6 +5,7 @@
 ## A. iPad の Swift Playgrounds（本番）
 
 必要なもの: iPadOS 17 以上、Swift Playgrounds 4.4 以上（`@Observable` と iOS 17 SDK が必要）。
+コンパイルを確認済みなのは iOS 18 SDK（Xcode 16.4 相当）と iOS 26 SDK（Xcode 26.3 相当）。iOS 17 SDK の Swift Playgrounds（4.4 / 4.5）では未確認。
 
 1. `MyHome.swiftpm` フォルダを iPad に置く。例:
    - GitHub のリポジトリ画面で「Code」→「Download ZIP」→ ファイル App で ZIP を開いて展開する。
@@ -33,7 +34,7 @@ Playgrounds はビルドログを出さないため、ストップウォッチ�
 scripts/measure-app-build.sh
 ```
 
-  iOS Simulator（最新ランタイムの iPad）向けに、クリーン / 変更なし / View 1ファイル変更 / Core 型のインターフェース変更の4種類を計測し、型チェックが 100ms を超えた関数・式を一覧にする。結果とログは `build-logs/app/`。
+  iOS Simulator（最新ランタイムの iPad）向けに、クリーン / 変更なし / View 1ファイル変更 / Core 型のインターフェース変更の4種類を計測し（クリーン以外は3回の中央値。回数は `REPEAT` で変更可）、型チェックが 100ms を超えた関数・式を一覧にする。結果とログは `build-logs/app/`。
 
 - Simulator で起動確認（`measure-app-build.sh` の後に実行。`SIM_UDID` は計測時に表示された値）。初期レイアウト、項目 0 件、1ページ 150 件の3通りで起動し、それぞれ 10 秒後も動いているかを確認してスクリーンショットを撮る:
 
