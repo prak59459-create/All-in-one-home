@@ -35,11 +35,15 @@ scripts/measure-app-build.sh
 
   iOS Simulator（最新ランタイムの iPad）向けに、クリーン / 変更なし / View 1ファイル変更 / Core 型のインターフェース変更の4種類を計測し、型チェックが 100ms を超えた関数・式を一覧にする。結果とログは `build-logs/app/`。
 
-- Simulator で起動確認（`measure-app-build.sh` の後に実行。`SIM_UDID` は計測時に表示された値）:
+- Simulator で起動確認（`measure-app-build.sh` の後に実行。`SIM_UDID` は計測時に表示された値）。初期レイアウト、項目 0 件、1ページ 150 件の3通りで起動し、それぞれ 10 秒後も動いているかを確認してスクリーンショットを撮る:
 
 ```bash
 SIM_UDID=<UDID> scripts/smoke-test-simulator.sh
 ```
+
+- 検証用の起動引数（Xcode のスキーム設定や `simctl launch` で指定。Swift Playgrounds では指定できない）:
+  - `-MyHomeSampleItems <件数>`: 初期レイアウトの代わりに、指定した件数の検証用項目を表示する（上限 2,000 件）
+  - `-MyHomeSampleItemsPerPage <件数>`: 1ページあたりの件数（既定 60）
 
 GitHub Actions（`.github/workflows/ci.yml` の `app-ios` ジョブ）でも同じスクリプトを Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で実行し、ジョブのサマリーに結果表を出す。スクリーンショットとログはアーティファクト `app-build-logs-xcode-<版>` に保存される。
 

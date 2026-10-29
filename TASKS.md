@@ -1,31 +1,39 @@
 # TASKS — 進捗管理
 
-状態ラベルの定義は [PLAN.md](PLAN.md) の「9. 状態ラベル」を参照。機能IDの正本は [docs/feature-catalog.md](docs/feature-catalog.md)。
+状態ラベルの定義は [PLAN.md](PLAN.md) の「9. 状態ラベル」を参照（実機確認済 / テスト済 / ビルド済 / 対応 / 部分・スタブ / 計画中 / 要PoC / OS制限）。
+機能IDの正本は [docs/feature-catalog.md](docs/feature-catalog.md)。ここに載っていない機能IDはすべて「計画中」。
 
-## Phase 0 — 調査・ビルド計測
+## Phase 0 — 調査・ビルド計測（完了。iPad でのビルド時間のみ未計測）
 
 | タスクID | 内容 | 状態 | 関連機能ID |
 |---|---|---|---|
 | T0-1 | リポジトリ・Git 状態・ビルド環境の調査 | 完了 | — |
-| T0-2 | Playgrounds 用マニフェストと最小アプリ（`MyHome.swiftpm`） | 完了（層 B は CI 結果待ち） | F0917 |
-| T0-3 | 検証用パッケージ（`Package.swift`、`Tests/`）で Core を Linux ビルド | CI確認済（ローカル Linux） | F0882, F0888, F0889 |
+| T0-2 | Playgrounds 用マニフェストと最小アプリ（`MyHome.swiftpm`） | ビルド済（Xcode 16.4 / 26.3） | F0917 |
+| T0-3 | 検証用パッケージ（`Package.swift`、`Tests/`）で Core を Linux ビルド | テスト済（Swift 5.10.1 / 6.0.3 / 6.4.1） | F0882, F0888, F0889 |
 | T0-4 | 計測スクリプト（Core / アプリ / Simulator 起動）と構文チェック | 完了 | F0890, F0891, F0892, F0918, F0921 |
-| T0-5 | CI（Linux: Swift 5.10.1 / 6.0.3 / 6.4.1、macOS: iOS Simulator） | 作成済（初回実行待ち） | F1061–F1080 の一部 |
-| T0-6 | 基準ビルド時間の記録 | Linux 済 / macOS CI 待ち / iPad 未計測 | F0890, F0891, F0892 |
+| T0-5 | CI（Linux 3 バージョン、macOS 2 バージョンの Xcode） | 完了 | F1061–F1080 の一部 |
+| T0-6 | 基準ビルド時間の記録 | Linux・macOS 済 / iPad 未計測 | F0890, F0891, F0892 |
 | T0-7 | PLAN.md / TASKS.md / docs/BUILD.md / docs/BUILD_TIMES.md | 完了 | — |
 | T0-8 | モデルファイルをリポジトリに含めない設定（`.gitignore`） | 完了 | F0898 |
 
-## Phase 1 — 最小ホーム（予定）
+## Phase 1 — 最小ホーム（実装済み・ビルド済。実機確認待ち）
 
 | タスクID | 内容 | 状態 | 関連機能ID |
 |---|---|---|---|
-| T1-1 | Core モデル：`HomeItem` / `HomePage` / `HomeLayout` / テーマ / 初期レイアウト | 計画中 | F0002, F0039, F0645, F0646 |
-| T1-2 | URL 検証と起動方針（確認付き起動、危険なスキームの拒否） | 計画中 | F0069–F0071, F0764–F0766, F0853, F0854 |
-| T1-3 | 画面幅からの列数計算 | 計画中 | F0005, F0006 |
-| T1-4 | SwiftUI：時計、アイコングリッド、ページ、ページインジケーター、Dock | 計画中 | F0001, F0008, F0009, F0081, F0201, F0206, F0207 |
-| T1-5 | テーマ選択（プリセット）とデザイントークン | 計画中 | F0641–F0646, D1201 |
-| T1-6 | 機能状況画面（未実装・OS制限・モデル未導入を明示） | 計画中 | F0080, F0971, F1200 |
-| T1-7 | LLM 境界：プロトコル、スタブ、遅延ロード制御（依存なし） | 計画中 | F0896, F0897, F0945, F0948 |
+| T1-1 | Core モデル：`HomeItem` / `HomePage` / `HomeLayout` / テーマ / 初期レイアウト | テスト済 | F0002, F0039, F0645 |
+| T1-2 | URL 検証と起動方針（確認付き起動、危険なスキームの拒否） | テスト済 | F0069–F0071, F0764–F0766, F0853, F0854 |
+| T1-3 | 画面幅からの列数計算 | テスト済 | F0005, F0006 |
+| T1-4 | SwiftUI：時計、アイコングリッド、ページ、ページインジケーター、Dock | ビルド済 | F0001, F0008, F0009, F0081, F0201, F0206, F0207 |
+| T1-5 | テーマ選択（プリセット 4 種、ライト / ダーク）とデザイントークン | ビルド済（配色のコントラストはテスト済） | F0641–F0646, D1201, D1202 |
+| T1-6 | 機能状況画面（未実装・スタブ・OS 制限を明示） | ビルド済 | F0080, F0971, F1200 |
+| T1-7 | LLM 境界：プロトコル、スタブ、遅延ロード制御（依存なし）と AI 画面（スタブ） | テスト済（制御）/ ビルド済（画面） | F0361, F0379, F0392, F0896, F0897, F0945, F0948 |
+| T1-8 | 0 件・1 ページ 150 件での Simulator 起動テスト | 作成済（CI 実行待ち） | F0950, F0909 |
+
+### 次の Phase に進む前に必要なこと（ユーザー確認）
+
+1. iPad の Swift Playgrounds で `MyHome.swiftpm` を開き、ビルドと起動ができるか（Phase 1 の完了条件）。
+2. 初回ビルドと、1ファイル変更後の再ビルドにかかった秒数（[docs/BUILD.md](docs/BUILD.md) の手順）。
+3. Swift Playgrounds のバージョンと iPadOS のバージョン（iOS 17 SDK の版では未確認のため）。
 
 ## 報告ログ
 
@@ -39,17 +47,45 @@
   MyHome.swiftpm/Core/AppInfo.swift, Tests/MyHomeCoreTests/AppInfoTests.swift, scripts/*.sh,
   .github/workflows/ci.yml, PLAN.md, TASKS.md, README.md, docs/BUILD.md, docs/BUILD_TIMES.md, docs/feature-catalog.md
 実装した機能: 最小アプリ（タイトル表示のみ）、Linux 検証パッケージ、計測スクリプト、CI
-ビルド結果: Linux（Core）PASS / macOS（アプリ全体）NOT RUN（CI 実行待ち）/ iPad NOT RUN
-テスト結果: 1件 PASS（Swift 5.10.1 / 6.0.3 / 6.4.1）
-初回/増分ビルド時間: docs/BUILD_TIMES.md（Linux の Core のみ。アプリ全体と iPad は未計測）
-既知の制限: iPad 実機・Swift Playgrounds での確認ができない環境。macOS の結果は CI 待ち
+ビルド結果: Linux（Core）PASS / macOS（アプリ全体、Xcode 16.4・26.3）PASS / iPad NOT RUN
+テスト結果: 1件 PASS（Swift 5.10.1 / 6.0.3 / 6.4.1）、Simulator 起動 PASS
+初回/増分ビルド時間: docs/BUILD_TIMES.md（macOS: クリーン 25.0 / 31.6 秒、View 1ファイル変更 2.0 / 3.0 秒）
+既知の制限: iPad 実機・Swift Playgrounds での確認ができない環境
 次に行う最小タスク: T1-1（Core モデル）
 ```
+
+途中で見つけて直した問題:
+
+- `Package.swift` のプレースホルダーアイコン `.layers` は存在しない名前だった（xcodebuild のマニフェスト解決で失敗）→ `.clock` に変更。
+- 計測スクリプトで、全角文字の直前の `$変数` を macOS の bash が変数名の一部と解釈して失敗し、さらに EXIT トラップのせいで失敗が成功扱いになっていた → `${変数}` と終了コードの保持で修正。
+
+### Phase 1（2026-10-29）
+
+```text
+タスクID: T1-1〜T1-8
+変更ファイル: MyHome.swiftpm/Core/**（モデル・ロジック・ストア・LLM 境界）、MyHome.swiftpm/DesignSystem/**、
+  MyHome.swiftpm/Features/**（Home / Dock / Launch / Settings / Status / AIChat）、MyHome.swiftpm/App/MyHomeApp.swift、
+  Tests/MyHomeCoreTests/**、scripts/measure-app-build.sh、scripts/smoke-test-simulator.sh
+実装した機能: 時計、アイコングリッド（幅に応じた列数）、横スワイプのページとページインジケーター、Dock、
+  確認付きの外部リンク起動、準備中・スタブの明示、テーマ 4 種とライト / ダーク、機能の状況、AI 画面（スタブのみ）
+ビルド結果: Linux（Core）PASS / macOS（Xcode 16.4・26.3）PASS / iPad NOT RUN
+テスト結果: 61件 PASS（Swift 5.10.1 / 6.0.3 / 6.4.1）、Simulator 起動 PASS（初期レイアウト）
+初回/増分ビルド時間: docs/BUILD_TIMES.md
+既知の制限: タップ・スワイプ・VoiceOver の操作は未確認。設定は保存されない（Phase 2）。iOS 17 SDK でのコンパイルは未確認
+次に行う最小タスク: iPad での確認結果を受けて Phase 2（JSON 永続化）の T2-1
+```
+
+途中で見つけて直した問題:
+
+- Swift 5.10.1 で `RGBAColor.init(hex:)` の型チェックに 60〜88ms かかっていた → 式を分割して 12ms 未満に。
+- `unload()` が生成タスクの終了を待たずに戻り、「画面を離れたら推論が止まる」ことを保証できていなかった → 停止を待ってから戻るよう修正し、テストを追加。
+- Swift 5.10.1 の旧 Foundation では `data:text/html,<b>x</b>` が URL として解析できず、理由が「形式エラー」になっていた → 危険なスキームと空白・制御文字を解析の前に判定し、環境によらず同じ結果に。
+- Linux 版 XCTest（Swift 5.10.1 / 6.0.3）は同期の `@MainActor` テストをコンパイルできない → テストを async に。
 
 ## 機能カタログの分類（62 カテゴリ / 1,740 項目）
 
 優先度は計画書「12. 優先順位の定義」（P0: 起動・表示・編集・保存・データ保護・ビルド安定性 / P1: ページ・フォルダ・Dock・壁紙・基本ウィジェット・検索・ミニアプリ / P2: LLM 実推論・天気・AI 支援・複雑なジェスチャ / P3: 高度な統計・拡張・実験的連携）。
-「Phase」は主に着手する Phase。横断的なカテゴリは全 Phase で扱う。ここに状態を書いていない項目はすべて「計画中」。
+「Phase」は主に着手する Phase。横断的なカテゴリは全 Phase で扱う。
 
 | ID 範囲 | カテゴリ | Phase | 優先度 | 実現性・制限のメモ |
 |---|---|---|---|---|
@@ -119,14 +155,96 @@
 
 ## 着手済みの機能ID
 
-| 機能ID | 名称 | 状態 | 場所 |
+「ビルド済」の UI は、コンパイルと Simulator での起動だけを確認したもの。タップ・スワイプ・読み上げは実機での確認待ち。
+
+### ホーム・アイコン・Dock
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
 |---|---|---|---|
-| F0888 | 依存関係の最小化 | CI確認済（外部パッケージ 0） | `MyHome.swiftpm/Package.swift` |
-| F0889 | 外部パッケージの最小化 | CI確認済（外部パッケージ 0） | 同上 |
-| F0890 | 初期ビルドの計測 | 部分（Linux の Core のみ） | `scripts/measure-core-build.sh`, `scripts/measure-app-build.sh` |
-| F0891 | 増分ビルドの計測 | 部分（Linux の Core のみ） | 同上 |
-| F0892 | コンパイル時間の記録 | 部分 | `docs/BUILD_TIMES.md` |
-| F0898 | モデルファイルをソースに含めない | 完了（`.gitignore`） | `.gitignore` |
-| F0917 | ビルド可能な最小構成の維持 | CI確認済（Linux の Core） | CI |
-| F0918 | コンパイルエラーの再現手順 | 完了（手順を文書化） | `docs/BUILD.md` |
-| F0921 | 起動テスト | 作成済（Simulator、CI 実行待ち） | `scripts/smoke-test-simulator.sh` |
+| F0001 | アイコングリッドの表示 | ビルド済 | `Features/Home/HomePageGridView.swift` |
+| F0002 | ページ単位のレイアウト | ビルド済 | `Core/Models/HomeLayout.swift`, `Features/Home/PagedGridView.swift` |
+| F0003, F0004 | 縦画面 / 横画面用レイアウト | 部分 | 幅に応じて列数が変わるだけ。向きごとの専用レイアウトはない |
+| F0005 | 画面幅に応じた列数調整 | テスト済 / ビルド済 | `Core/Logic/GridMetrics.swift` |
+| F0006 | ウィンドウ幅変更への追従 | ビルド済 | GeometryReader で幅を取得。実機での幅変更は未確認 |
+| F0008 | ページスワイプ | ビルド済 | TabView（ページ形式） |
+| F0009 | ページインジケーター | ビルド済 | タップと VoiceOver の上下スワイプで移動 |
+| F0039 | ホーム画面の初期レイアウト | テスト済 | `Core/Models/DefaultLayout.swift` |
+| F0069 | Web URL ショートカット | テスト済 / ビルド済 | |
+| F0070 | 確認付きリンク起動 | テスト済 / ビルド済 | `Core/Navigation/AppRouter.swift`, `Features/Launch/LaunchPresentationModifier.swift` |
+| F0071 | 無効 URL の検出 | テスト済 | `Core/Logic/URLPolicy.swift` |
+| F0078 | アイコンタップの演出 | ビルド済 | `DesignSystem/IconPressStyle.swift` |
+| F0079 | アイコンのアクセシビリティ名 | ビルド済（補足文はテスト済） | |
+| F0080 | デモアイコンと実リンクの区別 | テスト済 / ビルド済 | 外部リンク・スタブ・準備中の印 |
+| F0081 | Dock の表示 | ビルド済 | `Features/Dock/DockView.swift` |
+| F0117, F0118 | Dock の画面幅 / 狭いウィンドウ対応 | ビルド済 | ViewThatFits で小さいアイコン → 横スクロール |
+
+### 時計・外観
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
+|---|---|---|---|
+| F0201 | デジタル時計 | ビルド済 | `Features/Home/ClockHeaderView.swift`（1分ごとに更新） |
+| F0206, F0207 | 日付 / 曜日表示 | ビルド済 | |
+| F0641, F0642, F0643 | ライト / ダーク / システム連動 | ビルド済 | 設定は保存されない（Phase 2） |
+| F0645 | 複数のカラーパレット | テスト済 / ビルド済 | `Core/Models/ThemeCatalog.swift` |
+| F0646 | 背景グラデーション | ビルド済 | `DesignSystem/WallpaperView.swift` |
+| F0653 | ガラス風マテリアル | ビルド済 | Dock の背景 |
+| F0658 | アイコンのタップ縮小 | ビルド済 | |
+| F0674 | Reduce Motion への配慮 | 部分 | タップ演出とページ移動のアニメーションのみ |
+| D1201 | デザイントークン | 部分 | 余白・角丸・大きさ・動き。色と文字は未分離 |
+| D1202 | ライトテーマのコントラスト | テスト済 | 壁紙上の文字 4.5:1 以上、強調色 3:1 以上 |
+| D1205 | 複数パレットの切り替え | ビルド済 | 4 種 |
+
+### リンク・安全性
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
+|---|---|---|---|
+| F0761 | Web サイトショートカット | テスト済 / ビルド済 | F0069 と同じ |
+| F0762 | カスタム URL スキーム | 部分 | 初期配置の `shortcuts://` のみ。登録は Phase 2 |
+| F0764, F0854 | 起動前の確認 | テスト済 / ビルド済 | |
+| F0765 | URL 形式の検証 | テスト済 | |
+| F0766, F0853 | 危険なスキームの拒否 | テスト済 | javascript / vbscript / data / file / blob / about |
+| F0781 | リンク先ドメイン表示 | テスト済 | 確認ダイアログにホスト名を表示 |
+| F0782 | 外部ブラウザー起動 | ビルド済 | SwiftUI の openURL |
+| F0784 | 起動失敗の通知 | テスト済 / ビルド済 | |
+| F0866 | データ収集を行わない既定値 | 対応 | 通信はユーザーが確認したリンクを開く時だけ |
+
+### ローカル LLM（スタブのみ）
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
+|---|---|---|---|
+| F0361 | AI チャット画面 | スタブ | `Features/AIChat/`。応答は「[スタブ応答]」で始まる決まった文 |
+| F0378 | モデルのロード状態表示 | スタブ | 表示は実装。モデルはスタブのみ |
+| F0379, F0439 | モデルのアンロード / 安全なアンロード | テスト済 | 画面を閉じると生成を止めて解放 |
+| F0392 | 生成のキャンセル | テスト済 / ビルド済 | |
+| F0468, F0991 | モデル未導入時の説明 | ビルド済 | |
+| F0895 | LLM エンジンの独立モジュール化 | 部分 | プロトコルの境界のみ。別モジュール化は Playgrounds での対応が要PoC |
+| F0896 | LLM の遅延ロード | テスト済 | 起動時は作らない。読み込みはボタンを押した時だけ |
+| F0897 | モデル未導入でもビルド可能 | ビルド済 | 推論エンジン・モデルへの依存なし |
+| F0898 | モデルファイルをソースに含めない | 対応 | `.gitignore` |
+| F0945, F0947, F0948, F0949 | モデル未導入 / ロード失敗 / キャンセル / 長文入力のテスト | テスト済 | `Tests/MyHomeCoreTests/LLMSessionControllerTests.swift` |
+
+### パフォーマンス・テスト・ヘルプ
+
+| 機能ID | 名称 | 状態 | 場所・備考 |
+|---|---|---|---|
+| F0881, F0883–F0887 | ファイル・View の分割、型推論が重い式の分割 | 対応 | 最大 124 行 / ファイル。遅い型チェックを CI で監視 |
+| F0888, F0889 | 依存関係・外部パッケージの最小化 | 対応 | 外部パッケージ 0 |
+| F0890, F0891, F0892 | 初期 / 増分ビルドの計測と記録 | 部分 | Linux・macOS は記録済み。iPad は未計測 |
+| F0901 | LazyVGrid の利用 | ビルド済 | |
+| F0902 | 重い処理のメインスレッド回避 | 部分 | 推論はプロバイダー側のタスクで行う設計。他の重い処理はまだない |
+| F0903, F0904 | 非同期処理、キャンセル可能なタスク | テスト済 | LLM セッション |
+| F0905, F0906 | 無駄な状態更新の削減、描画更新範囲の限定 | 対応 | @Observable、時計は TimelineView 内だけ更新。描画回数の計測はしていない |
+| F0909, F0950 | 大量項目の検証 | テスト済（ロジック）/ Simulator 起動は T1-8 | |
+| F0916 | サンプルデータの分離 | 対応 | `Core/Models/SampleLayout.swift`、起動引数でのみ使用 |
+| F0917 | ビルド可能な最小構成の維持 | ビルド済 | |
+| F0918 | コンパイルエラーの再現手順 | 対応 | `docs/BUILD.md` |
+| F0921 | 起動テスト | ビルド済 | `scripts/smoke-test-simulator.sh` |
+| F0941 | 不正 URL テスト | テスト済 | |
+| F0971 | OS 制限の説明 | ビルド済 | 機能の状況画面 |
+| F0975 | VoiceOver ラベル | ビルド済 | 読み上げの確認は未実施 |
+| F0977 | Dynamic Type 対応 | 部分 | システムフォント。時計は ScaledMetric |
+| F0979 | コントラスト確認 | テスト済 | テーマとアイコンの印 |
+| F0980 | 色だけに依存しない状態表示 | ビルド済 | 印の文字・選択中の記号 |
+| F0982 | タップ領域の確保 | 部分 | ページの点は 28pt（44pt 未満） |
+| F0988 | 空状態の説明 | ビルド済 | |
+| F1200 | アプリ内ロードマップ表示 | ビルド済 | 機能の状況画面 |
