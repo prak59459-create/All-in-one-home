@@ -19,7 +19,8 @@ enum FeatureStatusCatalog {
             entry("links", "Web リンク・URL スキームの起動と登録", .available, "開く前に確認します。危険なスキームは開かず、登録もできません。"),
             entry("theme", "テーマ（4種類、ライト / ダーク）", .available, "変更は自動で保存します。"),
             entry("edit", "配置の編集・保存", .available, "項目の追加・削除・名前や記号の変更、ページ・Dock・フォルダをまたぐ移動。再起動後も復元します。"),
-            entry("folders", "フォルダ・ページの管理・取り消し", .available, "フォルダは1段まで。ページは空の時だけ削除できます。取り消しはアプリを開いている間だけです。")
+            entry("folders", "フォルダ・ページの管理・取り消し", .available, "フォルダは1段まで。ページは空の時だけ削除できます。取り消しはアプリを開いている間だけです。"),
+            entry("update", "ソフトウェアアップデート", .available, "設定から。GitHub のブランチから変わったファイルだけを書き込みます。書き込んだ後は Swift Playgrounds で実行し直してください（アプリ自身はビルドし直せません）。")
         ]
         return entries
     }

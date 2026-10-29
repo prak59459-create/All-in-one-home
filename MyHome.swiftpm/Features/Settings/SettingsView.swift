@@ -14,6 +14,12 @@ struct SettingsView: View {
                 }
                 appearanceSection
                 SaveStatusSection()
+                Section("ソフトウェア") {
+                    NavigationLink("ソフトウェアアップデート") {
+                        SoftwareUpdateView()
+                    }
+                    LabeledContent("バージョン", value: AppInfo.version)
+                }
             }
             .navigationTitle("設定")
             .toolbar {

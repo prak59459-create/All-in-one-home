@@ -71,6 +71,19 @@ Phase 3 で決めたこと:
 - フォルダはシートではなくホーム画面の上に重ねて表示する。フォルダの中から開いたリンクの確認や機能のシートを、ホーム画面からそのまま出せるようにするため。
 - 取り消しの履歴は保存しない（再起動すると消える）。
 
+## ソフトウェアアップデート（ユーザーの依頼で追加。実装済み・テスト済 / ビルド確認中）
+
+| 内容 | 状態 | 場所 |
+|---|---|---|
+| GitHub のブランチ一覧、コミットのファイル一覧、CI の結果の取得 | テスト済（固定の応答） | `Core/Update/GitHubUpdateClient.swift`, `CommitCheckStatus.swift` |
+| 手元との比較（git のブロブのハッシュ。SHA-1 は自前で実装し、git の値で検証） | テスト済 | `Core/Update/SHA1.swift`, `UpdatePlanner.swift` |
+| 書き込み先の確認（.swiftpm、Package.swift、識別ファイル。コピーは断る） | テスト済（確認の部分）/ ビルド確認中（フォルダの選択） | `Core/Update/PackageVerifier.swift`, `Features/Update/PackageAccess.swift` |
+| 全部取得してハッシュを確かめてから、退避して書き込む。途中で失敗したら戻す。元に戻す | テスト済（1〜4 回目の書き込みで失敗させても元のまま、元に戻すと完全に元通り） | `Core/Update/UpdateInstaller.swift` |
+| iCloud Drive / Swift Playgrounds と同時に使っても壊さない書き込み（NSFileCoordinator） | ビルド確認中 | `Features/Update/CoordinatedPackageFileSystem.swift` |
+| 書き込んだコミットでビルドされたかの表示（BuildStamp） | テスト済 | `Core/BuildStamp.swift`, `Core/Update/UpdateState.swift` |
+
+制限: アプリ自身はビルドし直せない（書き込んだ後は Swift Playgrounds で実行し直す）。iPad の実機では未確認（フォルダの選択、iCloud Drive への書き込み、Swift Playgrounds が開いている時の書き込み）。
+
 ## Phase 10 — MyHome 総合機能・アプリ構成（300 項目。計画中・分類済み）
 
 原本: [docs/phase10-catalog.md](docs/phase10-catalog.md)（2026-10-29 にユーザーから追加）。300 個を全部独立アプリにはせず、
