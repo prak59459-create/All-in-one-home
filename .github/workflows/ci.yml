@@ -1,0 +1,77 @@
+name: CI
+
+# Linux: UI に依存しない Core を複数の Swift バージョンでビルド・テストし、ビルド時間を計測する。
+# macOS: SwiftUI を含むアプリ本体を iOS Simulator 向けにビルド・計測し、Simulator で起動確認する。
+# どちらも iPad 版 Swift Playgrounds での実機ビルドの代わりではない（docs/BUILD.md 参照）。
+
+on:
+  pull_request:
+    paths:
+      - "MyHome.swiftpm/**"
+      - "Tests/**"
+      - "Package.swift"
+      - "scripts/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  core-linux:
+    name: Core / Linux / Swift ${{ matrix.swift }}
+    runs-on: ubuntu-latest
+    container: swift:${{ matrix.swift }}-noble
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Swift Playgrounds の Swift バージョンは端末ごとに異なるため、古い版と新しい版の両方で確認する。
+          - swift: "5.10.1"
+            flags: "-Xswiftc -strict-concurrency=complete"
+          - swift: "6.0.3"
+            flags: "-Xswiftc -swift-version -Xswiftc 6"
+          - swift: "6.4.1"
+            flags: "-Xswiftc -swift-version -Xswiftc 6"
+    steps:
+      - uses: actions/checkout@v5
+      - name: SwiftUI ファイルの構文チェック
+        run: scripts/parse-ui.sh
+      - name: Core のビルド計測とテスト
+        env:
+          SWIFT_EXTRA_FLAGS: ${{ matrix.flags }}
+        run: scripts/measure-core-build.sh
+
+  app-ios:
+    name: App / iOS Simulator
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - name: ツールチェーン情報
+        run: |
+          xcodebuild -version
+          swift --version
+          sysctl -n machdep.cpu.brand_string hw.ncpu || true
+          ls -d /Applications/Xcode*.app || true
+      - name: スキーム一覧
+        working-directory: MyHome.swiftpm
+        run: xcodebuild -list
+      - name: アプリのビルド計測（クリーン / 変更なし / 増分）
+        run: scripts/measure-app-build.sh
+      - name: Simulator 起動テスト
+        run: scripts/smoke-test-simulator.sh
+      - name: ログとスクリーンショットを保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build-logs
+          path: build-logs/
+          retention-days: 7

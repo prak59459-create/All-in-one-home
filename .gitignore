@@ -1,0 +1,23 @@
+# SwiftPM / Xcode build products
+.build/
+/build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Xcode / Swift Playgrounds metadata folders (machine-specific)
+/.swiftpm/
+MyHome.swiftpm/.swiftpm/
+MyHome.swiftpm/.build/
+
+# Local measurement logs
+build-logs/
+
+# LLM モデルファイルはリポジトリに含めない（ユーザーが端末で取り込む。PLAN.md「ローカルLLMの方針」）
+*.gguf
+*.safetensors
+*.mlmodel
+*.mlmodelc/
+*.mlpackage/
+
+.DS_Store
