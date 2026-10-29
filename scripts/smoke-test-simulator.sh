@@ -38,6 +38,6 @@ xcrun simctl shutdown "$UDID" 2>/dev/null || true
 
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   if [ "$STATUS" = 0 ]; then RESULT="PASS（${WAIT_SECONDS}秒後も動作中）"; else RESULT="FAIL"; fi
-  printf '## Simulator 起動テスト\n\n- 結果: %s\n- スクリーンショット: アーティファクト app-build-logs の smoke/launch.png\n' "$RESULT" >> "$GITHUB_STEP_SUMMARY"
+  printf '## Simulator 起動テスト\n\n- 結果: %s\n- スクリーンショット: アーティファクト app-build-logs-xcode-* の smoke/launch.png\n' "$RESULT" >> "$GITHUB_STEP_SUMMARY"
 fi
 exit "$STATUS"

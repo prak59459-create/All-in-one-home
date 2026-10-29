@@ -41,7 +41,7 @@ scripts/measure-app-build.sh
 SIM_UDID=<UDID> scripts/smoke-test-simulator.sh
 ```
 
-GitHub Actions（`.github/workflows/ci.yml` の `app-ios` ジョブ）でも同じスクリプトを実行し、ジョブのサマリーに結果表を出す。スクリーンショットとログはアーティファクト `app-build-logs` に保存される。
+GitHub Actions（`.github/workflows/ci.yml` の `app-ios` ジョブ）でも同じスクリプトを Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で実行し、ジョブのサマリーに結果表を出す。スクリーンショットとログはアーティファクト `app-build-logs-xcode-<版>` に保存される。
 
 ## C. Linux（Core のみ）
 
@@ -71,5 +71,5 @@ scripts/parse-ui.sh
 
 1. どの層で失敗したかを確認する（A: Playgrounds / B: macOS / C: Linux）。
 2. C で再現する場合は `scripts/measure-core-build.sh` のログ（`build-logs/core/*.log`）を見る。
-3. B で再現する場合は `build-logs/app/clean.log` を見る。CI ではアーティファクト `app-build-logs` に同じログがある。
+3. B で再現する場合は `build-logs/app/clean.log` を見る。CI ではアーティファクト `app-build-logs-xcode-<版>` に同じログがある。
 4. A でだけ失敗する場合は、Swift Playgrounds のバージョンと、エラーが出たファイル・行を記録する（Playgrounds の Swift バージョンが CI と異なる可能性が高い）。

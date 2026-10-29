@@ -50,17 +50,31 @@ jobs:
         run: scripts/measure-core-build.sh
 
   app-ios:
-    name: App / iOS Simulator
+    name: App / iOS Simulator / Xcode ${{ matrix.xcode }}
     runs-on: macos-15
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # 旧 SDK（iOS 18）と新 SDK（iOS 26）の両方でコンパイルできることを確認する。
+        xcode: ["16.4", "26.3"]
     steps:
       - uses: actions/checkout@v5
+      - name: Xcode の選択
+        run: sudo xcode-select -s "/Applications/Xcode_${{ matrix.xcode }}.app"
       - name: ツールチェーン情報
         run: |
           xcodebuild -version
           swift --version
           sysctl -n machdep.cpu.brand_string hw.ncpu || true
-          ls -d /Applications/Xcode*.app || true
+      - name: マニフェスト API の確認（使えるプレースホルダーアイコン）
+        run: |
+          API="$(find "$(xcode-select -p)/.." -name 'AppleProductTypes*.swiftinterface' 2>/dev/null | head -n 1)"
+          echo "AppleProductTypes: ${API:-見つかりません}"
+          if [ -n "$API" ]; then
+            awk '/enum PlaceholderIcon/,/^ *}/' "$API" | grep -E '^ *case ' | tr -s ' ' | tr '\n' ' ' || true
+            echo
+          fi
       - name: スキーム一覧
         working-directory: MyHome.swiftpm
         run: xcodebuild -list
@@ -72,6 +86,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-build-logs
+          name: app-build-logs-xcode-${{ matrix.xcode }}
           path: build-logs/
           retention-days: 7
