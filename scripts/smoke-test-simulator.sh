@@ -37,8 +37,11 @@ launch_case() {
   # ${1+"$@"}: 引数なしでも bash 3.2 の set -u で止まらないようにする。
   xcrun simctl launch "$UDID" "$BUNDLE_ID" ${1+"$@"} > "$OUT/launch-$name.txt"
   sleep "$WAIT_SECONDS"
-  local result
-  if xcrun simctl spawn "$UDID" launchctl list | grep -q "$BUNDLE_ID"; then
+  local result services
+  # 一覧を変数に取ってから探す。`launchctl list | grep -q` だと、grep が見つけた時点で終わって
+  # launchctl が SIGPIPE で異常終了し、pipefail のせいで「動いていない」と誤判定することがある。
+  services="$(xcrun simctl spawn "$UDID" launchctl list 2>/dev/null || true)"
+  if [[ "$services" == *"$BUNDLE_ID"* ]]; then
     result="PASS（${WAIT_SECONDS}秒後も動作中）"
   else
     result="FAIL（${WAIT_SECONDS}秒以内に終了。クラッシュの可能性）"
