@@ -8,6 +8,7 @@
 #   folder  : 同じファイルで、フォルダを開いて起動（-MyHomeOpenFolder folder.check）
 #   app-*   : ミニアプリの保存ファイル（scripts/fixtures/apps/*.json）を置き、そのミニアプリを開いて起動（-MyHomeOpenFeature <名前>）。
 #             メモ・タスク・電卓・単位変換・テキストツールの5つ。保存ファイルが読めた（別名に退避されていない）かも確かめる
+#   app-aiAssistant : AI の画面を開いて起動。端末内モデルが使えるか（使えない時はその理由）の表示を確かめる（モデルは読み込まない）
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
@@ -109,6 +110,7 @@ if [ -z "$(find "$DATA_DIR/Apps" -name '*.unreadable-*.json')" ]; then
 else
   record_check miniapp-files FAIL "ミニアプリの保存ファイルが読み込めず、別名に退避された"
 fi
+launch_case app-aiAssistant -MyHomeOpenFeature aiAssistant
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 printf '{ broken' > "$DATA_DIR/home.json"

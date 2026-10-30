@@ -69,9 +69,15 @@ struct TodoDetailText: View {
     private func dueText(_ due: DayStamp) -> String {
         let calendar: Calendar = .current
         let name: String = due.relativeName(today: today, calendar: calendar)
-            ?? due.date(in: calendar).map { (date: Date) -> String in date.formatted(.dateTime.month().day().weekday(.abbreviated)) }
+            ?? due.date(in: calendar).map { (date: Date) -> String in date.formatted(dateStyle(for: due)) }
             ?? due.text
         return isOverdue(due) ? "期限切れ・\(name)" : name
+    }
+
+    /// 今年でない期限は年も出す（Simulator の確認で、2020 年の期限が「1月1日」とだけ表示されて紛らわしかった）。
+    private func dateStyle(for due: DayStamp) -> Date.FormatStyle {
+        let sameYear: Date.FormatStyle = Date.FormatStyle.dateTime.month().day().weekday(.abbreviated)
+        return due.year == today.year ? sameYear : sameYear.year()
     }
 }
 
