@@ -8,7 +8,7 @@ struct AIInputBar: View {
 
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.small) {
-            TextField("メッセージ（スタブに送信）", text: $draft, axis: .vertical)
+            TextField(placeholder, text: $draft, axis: .vertical)
                 .lineLimit(1...4)
                 .textFieldStyle(.roundedBorder)
                 .disabled(session.phase != .ready)
@@ -38,6 +38,10 @@ struct AIInputBar: View {
             .disabled(!canSend)
             .accessibilityLabel("送信")
         }
+    }
+
+    private var placeholder: String {
+        session.loadedModel?.format == .stub ? "メッセージ（スタブに送信）" : "メッセージ"
     }
 
     private var canSend: Bool {

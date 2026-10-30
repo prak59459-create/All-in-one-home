@@ -31,7 +31,9 @@ enum AppFeature: String, CaseIterable, Codable, Sendable {
         switch self {
         case .settings, .featureStatus, .timer: return .available
         case .notes, .tasks, .calculator, .unitConverter, .textTools: return .available
-        case .aiAssistant: return .stub
+        case .aiAssistant:
+            // 端末内モデル（Apple Intelligence）が使える端末だけ本物の AI。使えなければスタブだけなので、そう示す
+            return LLMRuntime.isSystemModelAvailable ? .available : .stub
         case .weather: return .planned(phase: 7)
         }
     }

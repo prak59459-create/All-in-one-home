@@ -36,7 +36,7 @@ enum FeatureStatusCatalog {
 
     private static func stubs() -> [FeatureStatusEntry] {
         let entries: [FeatureStatusEntry] = [
-            entry("ai", "AI アシスタント", .stub, "モデル未導入です。スタブの応答だけを返し、実際の推論は行いません。実推論は Phase 6 で PoC を行ってから判断します。")
+            aiEntry()
         ]
         return entries
     }
@@ -58,6 +58,14 @@ enum FeatureStatusCatalog {
             entry("home-widgets", "iPadOS のホーム画面に置くウィジェット", .needsPoC, "アプリ内ウィジェットとは別機能です。Swift Playgrounds で作れるかは未確認です。")
         ]
         return entries
+    }
+
+    /// AI は端末によって状態が違う（Apple の端末内モデルが使えれば本物、使えなければスタブだけ）。
+    private static func aiEntry() -> FeatureStatusEntry {
+        if LLMRuntime.isSystemModelAvailable {
+            return entry("ai", "AI アシスタント", .available, "Apple の端末内モデルで答えます。入力した文章は端末の外に送りません。読み込みは AI 画面でボタンを押した時だけです。")
+        }
+        return entry("ai", "AI アシスタント", .stub, "この端末では Apple の端末内モデルが使えないため、スタブ（決まった文を返すだけ）です。理由は AI 画面に表示します。llama.cpp などの他のモデルは PoC で確認中です。")
     }
 
     private static func entry(_ id: String, _ title: String, _ state: FeatureState, _ note: String) -> FeatureStatusEntry {

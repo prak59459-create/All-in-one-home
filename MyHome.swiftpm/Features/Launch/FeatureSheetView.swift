@@ -41,7 +41,7 @@ struct FeatureDestinationView: View {
         case .featureStatus:
             FeatureStatusView()
         case .aiAssistant:
-            AIStubChatView()
+            AIChatView()
         case .timer:
             TimerAppView()
         case .notes:

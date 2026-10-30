@@ -15,6 +15,8 @@ struct MyHomeApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // 端末内モデルが使えるかを先に調べる（ホーム画面の AI の項目の「スタブ」の印に使う。モデルは読み込まない）
+        LLMRuntime.isSystemModelAvailable = SystemModelSupport.availability().isAvailable
         let options: LaunchOptions = LaunchOptions.current()
         let boot: AppBootstrap = AppBootstrap.make(options: options)
         let router = AppRouter()

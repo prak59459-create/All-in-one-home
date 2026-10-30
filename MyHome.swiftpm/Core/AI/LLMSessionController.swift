@@ -49,7 +49,11 @@ final class LLMSessionController {
         } catch {
             guard token == sessionToken else { return }
             phase = .notLoaded
-            errorMessage = "モデルを読み込めませんでした: \(error.localizedDescription)"
+            if let failure = error as? LLMError {
+                errorMessage = failure.message
+            } else {
+                errorMessage = "モデルを読み込めませんでした: \(error.localizedDescription)"
+            }
         }
     }
 
@@ -101,6 +105,14 @@ final class LLMSessionController {
         }
     }
 
+    /// 会話を消す（F0362 新しい会話）。生成中は消さない。モデルの会話の記憶（文脈）も消すには、
+    /// unload() してから読み込み直す（Foundation Models はセッションごとに会話を覚えているため）。
+    func clearConversation() {
+        guard phase != .generating else { return }
+        messages = []
+        errorMessage = nil
+    }
+
     /// 実行中の生成が終わるまで待つ。
     func waitForGeneration() async {
         await generationTask?.value
@@ -115,7 +127,9 @@ final class LLMSessionController {
         guard token == sessionToken else { return }
         generationTask = nil
         phase = .ready
-        if let failure, !(failure is CancellationError) {
+        if let failure = failure as? LLMError {
+            errorMessage = failure.message
+        } else if let failure, !(failure is CancellationError) {
             errorMessage = "生成に失敗しました: \(failure.localizedDescription)"
         } else if Task.isCancelled || failure is CancellationError {
             appendToLastMessage(LLMSessionController.interruptedSuffix)

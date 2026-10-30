@@ -5,6 +5,8 @@
 /// モデルファイルの形式。実際に推論できるかはバックエンドごとに PoC で確認する。
 enum LLMModelFormat: String, Hashable, Sendable {
     case stub
+    /// OS に入っているモデル（Apple の Foundation Models。iPadOS 26 以降・Apple Intelligence 対応機種）。ファイルは扱わない。
+    case systemModel
     case gguf
     case coreML
 }

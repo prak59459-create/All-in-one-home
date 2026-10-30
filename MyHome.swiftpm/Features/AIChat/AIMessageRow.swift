@@ -1,6 +1,7 @@
 import SwiftUI
+import UIKit
 
-/// 会話の1件。スタブの応答には「AI ではありません」と表示する（F0461）。
+/// 会話の1件。スタブの応答には「AI ではありません」と表示する（F0461）。長押しでコピーできる（F0394）。
 @MainActor
 struct AIMessageRow: View {
     let message: LLMMessage
@@ -14,6 +15,11 @@ struct AIMessageRow: View {
                 .padding(DesignTokens.Spacing.small)
                 .background(bubbleColor, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.medium, style: .continuous))
                 .textSelection(.enabled)
+                .contextMenu {
+                    Button("コピー", systemImage: "doc.on.doc") {
+                        UIPasteboard.general.string = message.text
+                    }
+                }
         }
         .frame(maxWidth: .infinity, alignment: frameAlignment)
         .accessibilityElement(children: .combine)
