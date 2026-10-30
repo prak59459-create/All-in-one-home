@@ -1,0 +1,60 @@
+name: PoC llama.cpp
+
+# PoC/LlamaPoC.swiftpm（llama.cpp の XCFramework を使う試作アプリ）が iPad 実機向けにコンパイル・リンクできるかを確かめる。
+# llama.cpp の配布物には iOS Simulator 用が入っていないため、Simulator では動かせない（起動テストはしない）。
+# 署名はしないので、実際に動くかは iPad の Swift Playgrounds で確かめる（PoC/README.md）。
+
+on:
+  pull_request:
+    paths:
+      - "PoC/**"
+      - ".github/workflows/poc-llama.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: poc-llama-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios-device:
+    name: LlamaPoC / iOS 実機向け / Xcode ${{ matrix.xcode }}
+    runs-on: macos-15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode: ["16.4", "26.3"]
+    defaults:
+      run:
+        shell: bash
+        working-directory: PoC/LlamaPoC.swiftpm
+    steps:
+      - uses: actions/checkout@v5
+      - name: Xcode の選択
+        run: sudo xcode-select -s "/Applications/Xcode_${{ matrix.xcode }}.app"
+      - name: スキーム一覧（ここで llama.cpp の XCFramework を取得し、checksum を照合する）
+        run: xcodebuild -list
+      - name: iOS 実機向けビルド（署名なし）
+        run: |
+          set -o pipefail
+          xcodebuild -scheme LlamaPoC -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | tail -n 80
+      - name: アプリに llama.framework が入っているか
+        run: |
+          APP=$(find build/DerivedData/Build/Products -maxdepth 2 -name "LlamaPoC.app" -type d | head -n 1)
+          echo "app: $APP"
+          test -n "$APP"
+          ls -la "$APP/Frameworks"
+          test -f "$APP/Frameworks/llama.framework/llama"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
+          otool -L "$APP/$EXE" | grep llama
+      - name: ログを保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poc-llama-xcode-${{ matrix.xcode }}
+          path: PoC/LlamaPoC.swiftpm/build.log
+          retention-days: 7
