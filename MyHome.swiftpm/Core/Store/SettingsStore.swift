@@ -38,6 +38,24 @@ final class SettingsStore {
         }
     }
 
+    /// アニメーションの量（F0671、F0672、F0674）。
+    var motion: MotionPreference {
+        didSet {
+            if motion != oldValue {
+                onChange?()
+            }
+        }
+    }
+
+    /// このアプリの中の文字の大きさ（F0978）。
+    var textSize: TextSizePreference {
+        didSet {
+            if textSize != oldValue {
+                onChange?()
+            }
+        }
+    }
+
     /// 設定が変わった時に呼ぶ（PersistenceController.attach が設定する）。
     @ObservationIgnored var onChange: (@MainActor () -> Void)?
 
@@ -45,16 +63,27 @@ final class SettingsStore {
         themeID: String = ThemeCatalog.defaultID,
         appearance: ThemeAppearance = .system,
         wallpaper: WallpaperSetting = .themeGradient,
-        showsSeconds: Bool = false
+        showsSeconds: Bool = false,
+        motion: MotionPreference = .system,
+        textSize: TextSizePreference = .system
     ) {
         self.themeID = themeID
         self.appearance = appearance
         self.wallpaper = wallpaper
         self.showsSeconds = showsSeconds
+        self.motion = motion
+        self.textSize = textSize
     }
 
     convenience init(saved: SavedSettings) {
-        self.init(themeID: saved.themeID, appearance: saved.appearance, wallpaper: saved.wallpaper, showsSeconds: saved.showsSeconds)
+        self.init(
+            themeID: saved.themeID,
+            appearance: saved.appearance,
+            wallpaper: saved.wallpaper,
+            showsSeconds: saved.showsSeconds,
+            motion: saved.motion,
+            textSize: saved.textSize
+        )
     }
 
     var theme: ThemePreset {
@@ -63,6 +92,6 @@ final class SettingsStore {
 
     /// 保存する内容。
     var saved: SavedSettings {
-        SavedSettings(themeID: themeID, appearance: appearance, wallpaper: wallpaper, showsSeconds: showsSeconds)
+        SavedSettings(themeID: themeID, appearance: appearance, wallpaper: wallpaper, showsSeconds: showsSeconds, motion: motion, textSize: textSize)
     }
 }

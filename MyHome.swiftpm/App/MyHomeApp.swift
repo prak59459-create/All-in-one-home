@@ -42,25 +42,28 @@ struct MyHomeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeScreen()
-                .environment(homeStore)
-                .environment(settings)
-                .environment(persistence)
-                .environment(timers)
-                .environment(miniApps)
-                .environment(router)
-                .environment(\.imageStore, images)
-                .onChange(of: scenePhase) { _, phase in
-                    // 裏に回る時は待たずに保存する（F0837。裏に回った後は OS が止めることがある）。ミニアプリのデータも同じ
-                    if phase != .active {
-                        Task {
-                            await persistence.flush()
-                            await miniApps.flushAll()
-                        }
-                    } else {
-                        timers.refresh()
+            // 動きの量と文字の大きさの設定は、ホーム画面とシートの全部に効くよう一番外側で渡す
+            AccessibilityRoot {
+                HomeScreen()
+            }
+            .environment(homeStore)
+            .environment(settings)
+            .environment(persistence)
+            .environment(timers)
+            .environment(miniApps)
+            .environment(router)
+            .environment(\.imageStore, images)
+            .onChange(of: scenePhase) { _, phase in
+                // 裏に回る時は待たずに保存する（F0837。裏に回った後は OS が止めることがある）。ミニアプリのデータも同じ
+                if phase != .active {
+                    Task {
+                        await persistence.flush()
+                        await miniApps.flushAll()
                     }
+                } else {
+                    timers.refresh()
                 }
+            }
         }
     }
 }

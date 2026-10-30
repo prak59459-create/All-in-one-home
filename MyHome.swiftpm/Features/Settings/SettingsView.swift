@@ -13,10 +13,14 @@ struct SettingsView: View {
                     ThemePickerView()
                 }
                 appearanceSection
+                motionAndTextSection
                 WallpaperSettingsSection()
                 clockSection
                 SaveStatusSection()
                 Section("ソフトウェア") {
+                    NavigationLink("使い方と困った時") {
+                        HelpView()
+                    }
                     NavigationLink("ソフトウェアアップデート") {
                         SoftwareUpdateView()
                     }
@@ -38,6 +42,27 @@ struct SettingsView: View {
         @Bindable var bindable = settings
         return Section("時計") {
             Toggle("ホーム画面の時計に秒を表示", isOn: $bindable.showsSeconds)
+        }
+    }
+
+    /// 動きと文字の大きさ（F0671、F0672、F0674、F0978）。
+    private var motionAndTextSection: some View {
+        @Bindable var bindable = settings
+        return Section {
+            Picker("動き", selection: $bindable.motion) {
+                ForEach(MotionPreference.allCases) { (preference: MotionPreference) in
+                    Text(preference.title).tag(preference)
+                }
+            }
+            Picker("文字の大きさ", selection: $bindable.textSize) {
+                ForEach(TextSizePreference.allCases) { (preference: TextSizePreference) in
+                    Text(preference.title).tag(preference)
+                }
+            }
+        } header: {
+            Text("動きと文字")
+        } footer: {
+            Text("「端末の設定に合わせる」では、iPad の設定の「視差効果を減らす」（アクセシビリティ → 動作）と、文字の大きさに従います。")
         }
     }
 

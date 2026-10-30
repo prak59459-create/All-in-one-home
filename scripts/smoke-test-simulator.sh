@@ -11,6 +11,8 @@
 #   app-aiAssistant : AI の画面を開いて起動。端末内モデルが使えるか（使えない時はその理由）の表示を確かめる（モデルは読み込まない）
 #   app-weather : 天気の保存ファイル（通信はオフ、前回取得した天気。make-weather-fixture.py が今の時刻に合わせて作る）を置いて
 #             天気を開く。通信しないまま前回の天気が表示されるか、保存ファイルが読めたかを確かめる
+#   large-text / large-text-weather : 端末の文字の大きさを最大（アクセシビリティ XXXL）にして、ホーム画面と天気の画面を開く（崩れの確認）
+#   dark    : 端末をダークモードにしてホーム画面を開く
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
@@ -122,6 +124,21 @@ if [ -z "$(find "$DATA_DIR/Apps" -name 'weather.unreadable-*.json')" ]; then
   record_check weather-file PASS "天気の保存ファイルを読み込めた（通信はオフのまま。表示は app-weather.png）"
 else
   record_check weather-file FAIL "天気の保存ファイルが読み込めず、別名に退避された"
+fi
+
+# 文字の大きさとダークモード（Phase 8）。設定を変えられなかった時は、その旨を残して続ける
+if xcrun simctl ui "$UDID" content_size accessibility-extra-extra-extra-large; then
+  launch_case large-text
+  launch_case large-text-weather -MyHomeOpenFeature weather
+  xcrun simctl ui "$UDID" content_size large || true
+else
+  echo "::warning::Simulator の文字の大きさを変えられなかった（large-text は撮っていない）"
+fi
+if xcrun simctl ui "$UDID" appearance dark; then
+  launch_case dark
+  xcrun simctl ui "$UDID" appearance light || true
+else
+  echo "::warning::Simulator をダークモードにできなかった（dark は撮っていない）"
 fi
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true

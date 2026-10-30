@@ -57,6 +57,10 @@ struct SavedSettings: Codable, Hashable, Sendable {
     var wallpaper: WallpaperSetting
     /// ホーム画面上部の時計に秒を表示する（F0203）。
     var showsSeconds: Bool
+    /// アニメーションの量（F0671、F0672）。Phase 8 で追加。ない時は端末の設定に合わせる。
+    var motion: MotionPreference
+    /// このアプリの中の文字の大きさ（F0978）。Phase 8 で追加。ない時は端末の設定に合わせる。
+    var textSize: TextSizePreference
 
     static let defaults = SavedSettings(themeID: ThemeCatalog.defaultID, appearance: .system)
 
@@ -65,13 +69,24 @@ struct SavedSettings: Codable, Hashable, Sendable {
         case appearance
         case wallpaper
         case showsSeconds
+        case motion
+        case textSize
     }
 
-    init(themeID: String, appearance: ThemeAppearance, wallpaper: WallpaperSetting = .themeGradient, showsSeconds: Bool = false) {
+    init(
+        themeID: String,
+        appearance: ThemeAppearance,
+        wallpaper: WallpaperSetting = .themeGradient,
+        showsSeconds: Bool = false,
+        motion: MotionPreference = .system,
+        textSize: TextSizePreference = .system
+    ) {
         self.themeID = themeID
         self.appearance = appearance
         self.wallpaper = wallpaper
         self.showsSeconds = showsSeconds
+        self.motion = motion
+        self.textSize = textSize
     }
 
     init(from decoder: Decoder) throws {
@@ -80,9 +95,13 @@ struct SavedSettings: Codable, Hashable, Sendable {
         let decodedAppearance: ThemeAppearance? = try? container.decodeIfPresent(ThemeAppearance.self, forKey: .appearance)
         let decodedWallpaper: WallpaperSetting? = try? container.decodeIfPresent(WallpaperSetting.self, forKey: .wallpaper)
         let decodedSeconds: Bool? = try? container.decodeIfPresent(Bool.self, forKey: .showsSeconds)
+        let decodedMotion: MotionPreference? = try? container.decodeIfPresent(MotionPreference.self, forKey: .motion)
+        let decodedTextSize: TextSizePreference? = try? container.decodeIfPresent(TextSizePreference.self, forKey: .textSize)
         themeID = decodedTheme ?? SavedSettings.defaults.themeID
         appearance = decodedAppearance ?? SavedSettings.defaults.appearance
         wallpaper = decodedWallpaper ?? .themeGradient
         showsSeconds = decodedSeconds ?? false
+        motion = decodedMotion ?? .system
+        textSize = decodedTextSize ?? .system
     }
 }

@@ -9,6 +9,7 @@ struct HomeScreen: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.imageStore) private var imageStore
+    @Environment(\.motionLevel) private var motion
     @State private var pageIndex: Int = 0
 
     var body: some View {
@@ -17,7 +18,14 @@ struct HomeScreen: View {
             content
             if let folderID = router.openFolderID {
                 FolderOverlayView(folderID: folderID)
+                    .transition(MotionStyle.appear(motion))
             }
+        }
+        // フォルダの開閉と編集モードの切り替えは、動きの設定に従ってアニメーションする（F0660、F0672）
+        .animation(MotionStyle.standard(motion), value: router.openFolderID)
+        .animation(MotionStyle.standard(motion), value: router.isEditing)
+        .background {
+            HomeKeyboardShortcuts(pageIndex: $pageIndex, pageCount: store.layout.pages.count)
         }
         .environment(\.homePalette, isImageWallpaper ? palette.forImageWallpaper : palette)
         .environment(\.isImageWallpaper, isImageWallpaper)
@@ -59,6 +67,7 @@ struct HomeScreen: View {
             .overlay(alignment: .top) {
                 if router.isEditing {
                     EditModeBar(pageIndex: pageIndex)
+                        .transition(MotionStyle.appear(motion))
                 }
             }
     }

@@ -8,7 +8,7 @@ struct PageIndicatorView: View {
     let count: Int
     @Binding var selection: Int
     @Environment(\.homePalette) private var palette
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.motionLevel) private var motion
     @Environment(HomeStore.self) private var store
     @Environment(AppRouter.self) private var router
 
@@ -76,8 +76,7 @@ struct PageIndicatorView: View {
     private func select(_ index: Int) {
         guard count > 0 else { return }
         let clamped: Int = min(max(index, 0), count - 1)
-        let animation: Animation? = reduceMotion ? nil : .easeInOut(duration: DesignTokens.Motion.standard)
-        withAnimation(animation) {
+        withAnimation(MotionStyle.movement(motion)) {
             selection = clamped
         }
     }
