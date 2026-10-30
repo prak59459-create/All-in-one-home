@@ -4,24 +4,31 @@ import SwiftUI
 @MainActor
 struct WeatherAppView: View {
     @Environment(MiniAppLibrary.self) private var library
-    @State private var controller: WeatherController?
 
     var body: some View {
         let document: MiniAppDocument<WeatherData> = library.document(WeatherData.self)
         MiniAppScaffold(title: "天気") {
             MiniAppHost(document: document) {
-                if let controller {
-                    WeatherScreen(controller: controller)
-                } else {
-                    ProgressView()
-                }
+                WeatherControllerHost(document: document)
             }
         }
-        .task {
-            if controller == nil {
-                controller = WeatherController(document: document, client: OpenMeteoClient(transport: WeatherURLSessionTransport.shared))
-            }
-        }
+    }
+}
+
+/// 天気の画面の動き（WeatherController）を持つ。
+/// 以前は親の @State に後から入れていたが、その値を子に渡した関数の中でしか読んでいなかったため、
+/// 入れても描き直されず、読み込み中の表示のまま止まっていた（Phase 7 の起動テストのスクリーンショットで発見）。
+/// 今は最初の表示の時に @State の初期値として作る（作り直しの時に作られる分は使われずに捨てられる。通信はしない）。
+@MainActor
+struct WeatherControllerHost: View {
+    @State private var controller: WeatherController
+
+    init(document: MiniAppDocument<WeatherData>) {
+        _controller = State(initialValue: WeatherController(document: document, client: OpenMeteoClient(transport: WeatherURLSessionTransport.shared)))
+    }
+
+    var body: some View {
+        WeatherScreen(controller: controller)
     }
 }
 
