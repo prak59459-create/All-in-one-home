@@ -3,51 +3,67 @@
 MyHome とは別の、小さな試作アプリです。iPad の Swift Playgrounds で作ったアプリから llama.cpp（GGUF 形式のモデルを動かすライブラリ）を使えるかを確かめます。
 MyHome 本体はこのアプリを使いません（MyHome の AI は Phase 6 で Apple の端末内モデル（Foundation Models）を使うようにしました）。
 
-## 確かめたいこと
+## 今のところの結論
 
-1. **Swift Playgrounds がこのパッケージをビルドして起動できるか。** いちばん分からない点です。
-   llama.cpp は公式リリースの XCFramework（ビルド済みのバイナリ、b11998、zip で約 70MB）を `binaryTarget` で取り込んでいます。
-   中身は動的ライブラリ（`llama.framework`）なので、Swift Playgrounds が取得・署名・読み込みのどこかで断る可能性があります。
-2. **iPad で GGUF のモデルを読み込み、文章を生成できるか。** 読み込みにかかった時間と、生成の速さ（トークン/秒）を画面に出します。
+**iPad の Swift Playgrounds で llama.cpp を使うのは、難しい見込みです。** iPad で試すと確定できます（下の「iPad での確認」）。
+
+- **CI で分かったこと（Xcode 16.4 と 26.3）**: llama.cpp 公式の XCFramework（b11998）は、取得（checksum の照合）とコンパイル・リンクまではできました。
+  ただし、**できたアプリに `llama.framework` が入っていませんでした**（アプリの中に Frameworks フォルダがない）。
+  この XCFramework は動的ライブラリなので、アプリに入っていないと、iPad で起動した時にライブラリが見つからずに落ちる可能性が高いです。
+  Swift Playgrounds の形（.swiftpm）のアプリには、「このライブラリをアプリに入れる」と指定する場所がありません。
+- **公開されている報告**（どれも少し古く、今の版で変わった可能性はあります）:
+  - iPad の Swift Playgrounds 4 では、ビルド済みのバイナリ（binaryTarget）を含むパッケージを読み込めなかった
+    （2022 年 1 月、[Apple Developer Forums](https://developer.apple.com/forums/thread/698119)。返信なし）。
+  - iPad の Swift Playgrounds は Swift のターゲットだけに対応し、C / C++ / Objective-C のターゲットは使えない
+    （2021 年 12 月、[Swift Forums](https://forums.swift.org/t/adding-packages-in-swift-playgrounds-4/54173/2)）。
+    2024 年 3 月にも、Swift Playgrounds 4.4.1（iPadOS 17.4）で「target type, "ClangTarget", is not supported」という報告がある
+    （[vapor/mysql-nio#107](https://github.com/vapor/mysql-nio/issues/107)）。
+  - llama.cpp は C / C++ で書かれているので、ソースからビルドする方法も、iPad の Swift Playgrounds では使えない見込みです。
 
 ## CI で確かめていること・いないこと
 
-- 確かめている: Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で、iPad 実機向け（`generic/platform=iOS`、署名なし）にコンパイル・リンクできること。
-  できたアプリに `llama.framework` が入っていること（`.github/workflows/poc-llama.yml`）。
+- 確かめている: Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で、iPad 実機向け（`generic/platform=iOS`、署名なし）にコンパイルし、
+  llama.framework をリンクできること。アプリに llama.framework が入っているかは、結果として記録する（入っていなければ警告を出す）。
+  設定は `.github/workflows/poc-llama.yml`。
 - 確かめていない: 実際に動くかどうか。llama.cpp の配布物には iOS Simulator 用が入っていないため Simulator では起動できず、CI には iPad もありません。
-  Swift Playgrounds での動作も CI では分かりません。**動作の確認は iPad で試してもらう必要があります。**
+  Swift Playgrounds での動作も CI では分かりません。
 
-## iPad での試し方
+## iPad での確認（5 分ほど。任意）
 
 1. iPad の Safari で GitHub のこのリポジトリを開き、ブランチを `claude/llama-cpp-poc` に切り替えて「Code」→「Download ZIP」。
 2. ファイル App で zip を展開し、`PoC/LlamaPoC.swiftpm` を Swift Playgrounds で開く。
    最初の1回は llama.cpp の XCFramework（約 70MB）をダウンロードするので、インターネットにつないでおく。
-3. GGUF 形式の小さなモデルを用意して、ファイル App の「このiPad内」に置く（iCloud Drive にあると、ダウンロードされていなくて読めないことがあります）。
+3. （A・B を通った場合だけ）GGUF 形式の小さなモデルを、ファイル App の「このiPad内」に置く（iCloud Drive にあると、ダウンロードされていなくて読めないことがあります）。
    まずは 1B 以下の指示調整済み（Instruct）モデルを Q4_K_M などで量子化した、1GB 未満のファイルから試してください。
    例: Qwen2.5-0.5B-Instruct の GGUF（Apache-2.0）。モデルごとにライセンスが違うので、使う前に配布元のページで確認してください。
 4. アプリを実行し、「GGUF ファイルを選ぶ」→ 読み込みが終わったら「生成する」。
 
 Swift Playgrounds の「App設定」は変えないでください。変えると Package.swift が書き直され、llama.cpp の指定が消えることがあります。
 
-## 結果を教えてほしいこと
-
-| 段階 | うまくいった時 | 失敗した時に考えられること |
+| 段階 | 予想 | うまくいった時 |
 |---|---|---|
-| A. パッケージの取得とビルド | エラーなしで実行できる | Swift Playgrounds が `binaryTarget`（ビルド済みのバイナリ）に対応していない |
-| B. 起動 | 画面が出る | 起動直後に落ちる → `llama.framework`（動的ライブラリ）を読み込めない・署名が通らない |
-| C. モデルの読み込み | 「読み込みました」と時間が出る | メモリが足りない（小さいモデルで試す）、ファイルが GGUF でない・iCloud にある |
-| D. 生成 | 日本語の答えとトークン/秒が出る | 文字化け・意味の通らない文 → モデルのチャットの形式が合っていない可能性 |
+| A. パッケージの取得とビルド | 報告どおりなら、ここで止まる（パッケージを解決できない） | エラーなしで実行できる |
+| B. 起動 | A を通っても、llama.framework がアプリに入らず、起動直後に落ちる見込み | 画面が出る |
+| C. モデルの読み込み | A・B を通った場合だけ確かめられる | 「読み込みました」と時間が出る |
+| D. 生成 | 同上 | 日本語の答えとトークン/秒が出る |
 
-あわせて、iPad の機種・iPadOS の版・Swift Playgrounds の版・使ったモデルのファイル名と大きさ・読み込み時間・トークン/秒を教えてください。
-エラーが出た時は、その文（またはスクリーンショット）があると原因を絞れます。
+どの段階で止まったか、出たエラーの文（またはスクリーンショット）、iPad の機種・iPadOS の版・Swift Playgrounds の版を教えてください。
+最後まで動いた場合は、使ったモデルのファイル名と大きさ・読み込み時間・トークン/秒もお願いします。
+
+## 続けるとしたら（次の手の候補）
+
+- **llama.cpp を静的ライブラリとしてビルドし、XCFramework にしてパッケージに入れる。** 静的ライブラリはアプリ本体に組み込まれるので、
+  「アプリに入らない」問題は起きません。ただし、iPad の Swift Playgrounds がビルド済みのバイナリを読めない（段階 A で止まる）なら、これも使えません。
+  A を通るかを先に確かめます。
+- **通常の Xcode プロジェクト（.xcodeproj）にする。** 「アプリに入れる」設定ができるので動かせる見込みですが、Mac の Xcode が必要になり、
+  iPad だけで作るという前提から外れます。
 
 ## この PoC の範囲
 
 - 1問1答だけ。前の質問は覚えていません（毎回消します）。コンテキストは 2,048 トークン。
 - 生成中にアプリを裏に回すと、iPadOS は裏での GPU の利用を許さないため、失敗することがあります。生成中は前に出しておいてください。
 - モデルのファイルはアプリにコピーせず、選んだ場所から直接読みます（大きなファイルを二重に持たないため）。読み込んでいる間はそのファイルを動かさないでください。
-- MyHome には組み込みません。組み込むかどうかは、この PoC の結果を見て別に決めます
-  （組み込むと MyHome が外部のバイナリに依存し、ダウンロードとビルドの時間も増えるため）。
+- MyHome には組み込みません（外部のバイナリに依存し、ダウンロードとビルドの時間も増えるため。上の結論のとおり、Swift Playgrounds では動かない見込みでもある）。
 
 ## llama.cpp の版を上げる時
 

@@ -1,6 +1,7 @@
 name: PoC llama.cpp
 
-# PoC/LlamaPoC.swiftpm（llama.cpp の XCFramework を使う試作アプリ）が iPad 実機向けにコンパイル・リンクできるかを確かめる。
+# PoC/LlamaPoC.swiftpm（llama.cpp の XCFramework を使う試作アプリ）が iPad 実機向けにコンパイル・リンクできるかを確かめ、
+# アプリに llama.framework（動的ライブラリ）が埋め込まれるかを記録する。
 # llama.cpp の配布物には iOS Simulator 用が入っていないため、Simulator では動かせない（起動テストはしない）。
 # 署名はしないので、実際に動くかは iPad の Swift Playgrounds で確かめる（PoC/README.md）。
 
@@ -42,15 +43,44 @@ jobs:
           set -o pipefail
           xcodebuild -scheme LlamaPoC -destination 'generic/platform=iOS' \
             -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | tail -n 80
-      - name: アプリに llama.framework が入っているか
+      # リンクできていることは確かめる（できていなければ失敗）。アプリに llama.framework が入っているかは、
+      # PoC の調べたい点なので結果として記録する（最初の CI で、Xcode 16.4 / 26.3 とも入っていなかった。PoC/README.md）。
+      - name: llama とのリンクと、アプリへの埋め込みの確認
         run: |
           APP=$(find build/DerivedData/Build/Products -maxdepth 2 -name "LlamaPoC.app" -type d | head -n 1)
           echo "app: $APP"
           test -n "$APP"
-          ls -la "$APP/Frameworks"
-          test -f "$APP/Frameworks/llama.framework/llama"
-          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
-          otool -L "$APP/$EXE" | grep llama
+          ls -la "$APP"
+          LINKED=no
+          # 出力は変数に取ってから調べる（`| grep -q` だと pipefail の下で SIGPIPE による誤判定がありうる）
+          for BIN in "$APP"/*; do
+            [ -f "$BIN" ] || continue
+            KIND="$(file "$BIN")"
+            [[ "$KIND" == *"Mach-O"* ]] || continue
+            DEPS="$(otool -L "$BIN")"
+            echo "== $(basename "$BIN") が読み込むライブラリと、探す場所（rpath）"
+            echo "$DEPS"
+            otool -l "$BIN" | grep -A2 LC_RPATH | grep path || true
+            if [[ "$DEPS" == *"llama.framework/llama"* ]]; then
+              LINKED=yes
+            fi
+          done
+          if [ "$LINKED" != yes ]; then
+            echo "::error::アプリが llama.framework をリンクしていない"
+            exit 1
+          fi
+          if [ -f "$APP/Frameworks/llama.framework/llama" ] || [ -f "$APP/llama.framework/llama" ]; then
+            EMBEDDED="入っている"
+          else
+            EMBEDDED="入っていない（このままでは実機の起動時に llama.framework が見つからない）"
+            echo "::warning::llama.framework がアプリに入っていない。Xcode はこの形（.swiftpm）のアプリに、binaryTarget の動的ライブラリを埋め込まなかった"
+          fi
+          {
+            echo "## LlamaPoC（Xcode ${{ matrix.xcode }}、iOS 実機向け）"
+            echo ""
+            echo "- コンパイルとリンク: できた（llama.framework をリンクしている）"
+            echo "- アプリへの llama.framework の埋め込み: $EMBEDDED"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: ログを保存
         if: always()
         uses: actions/upload-artifact@v4
