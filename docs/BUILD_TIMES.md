@@ -89,6 +89,19 @@ Swift 5.10.1 のみ。CI と同じく `-strict-concurrency=complete` を付け�
 
 型チェックが 50ms を超えた関数・式: 0 件。Swift 6.0.3 / 6.4.1 は Swift 6 言語モードでビルドとテストが通ることを確認（時間は CI の値を参照）。
 
+### Phase 8（Core は 109 ファイル、テスト 285 件。増分は `HomeItem.swift` の変更）
+
+Swift 5.10.1 のみ。CI と同じく、本体は `-strict-concurrency=complete`、テストは追加のフラグなしで計測。
+Phase 5（95 ファイル）と比べて、クリーンは 10.04 → 13.76 秒、`HomeItem.swift` 変更の増分は 2.91 → 3.81 秒。
+
+| Swift | 言語モード | クリーン | 変更なし | 増分（`HomeItem.swift`） | テストのビルド | テスト実行 |
+|---|---|---|---|---|---|---|
+| 5.10.1 | Swift 5 + strict concurrency | 13.76 | 0.39 (0.38–0.50) | 3.81 (3.77–3.94) | 12.38 | 1.41 |
+
+型チェックが 50ms を超えた関数・式: 0 件。ただし Phase 7 の CI（8320b4a）では、変えていない関数が 2 件、50ms をわずかに超えた
+（`SHA1.process` 58ms、`TimerValidator.sanitized` 56ms。手元では `LLMSessionController.send` が 54ms）。
+どれも境目でぶれていたので、小さな関数に分けて余裕を持たせた（動きは変えていない。既存のテストで確認）。
+
 ### Phase 2（Core は 43 ファイル、テスト 131 件。増分は `HomeItem.swift` の変更）
 
 増分の変更対象が Phase 1 と違う（`AppInfo.swift` → 多くのファイルが参照する `HomeItem.swift`）ため、増分の値は Phase 1 と直接比べられない。

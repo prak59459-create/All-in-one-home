@@ -47,19 +47,7 @@ enum SHA1 {
     }
 
     private static func process(_ block: [UInt8], into state: inout [UInt32]) {
-        var w: [UInt32] = Array(repeating: 0, count: 80)
-        for index in 0..<16 {
-            let base: Int = index * 4
-            let b0: UInt32 = UInt32(block[base]) << 24
-            let b1: UInt32 = UInt32(block[base + 1]) << 16
-            let b2: UInt32 = UInt32(block[base + 2]) << 8
-            let b3: UInt32 = UInt32(block[base + 3])
-            w[index] = b0 | b1 | b2 | b3
-        }
-        for index in 16..<80 {
-            let mixed: UInt32 = w[index - 3] ^ w[index - 8] ^ w[index - 14] ^ w[index - 16]
-            w[index] = rotate(mixed, by: 1)
-        }
+        let w: [UInt32] = schedule(block)
         var a: UInt32 = state[0]
         var b: UInt32 = state[1]
         var c: UInt32 = state[2]
@@ -79,6 +67,24 @@ enum SHA1 {
         state[2] = state[2] &+ c
         state[3] = state[3] &+ d
         state[4] = state[4] &+ e
+    }
+
+    /// 64 バイトのブロックから、80 個の語を作る（型チェックを軽くするため process から分けた）。
+    private static func schedule(_ block: [UInt8]) -> [UInt32] {
+        var w: [UInt32] = Array(repeating: 0, count: 80)
+        for index in 0..<16 {
+            let base: Int = index * 4
+            let b0: UInt32 = UInt32(block[base]) << 24
+            let b1: UInt32 = UInt32(block[base + 1]) << 16
+            let b2: UInt32 = UInt32(block[base + 2]) << 8
+            let b3: UInt32 = UInt32(block[base + 3])
+            w[index] = b0 | b1 | b2 | b3
+        }
+        for index in 16..<80 {
+            let mixed: UInt32 = w[index - 3] ^ w[index - 8] ^ w[index - 14] ^ w[index - 16]
+            w[index] = rotate(mixed, by: 1)
+        }
+        return w
     }
 
     private static func roundValues(index: Int, b: UInt32, c: UInt32, d: UInt32) -> (UInt32, UInt32) {

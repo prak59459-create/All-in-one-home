@@ -67,8 +67,11 @@ final class LLMSessionController {
         phase = .generating
         errorMessage = nil
         let request = LLMGenerationRequest(prompt: limited, maxTokens: LLMSessionController.maximumOutputTokens)
-        let stream: AsyncThrowingStream<String, Error> = model.generate(request)
-        let token: Int = sessionToken
+        startGeneration(model.generate(request), token: sessionToken)
+    }
+
+    /// 応答を受け取りながら最後のメッセージに足す（型チェックを軽くするため send から分けた）。
+    private func startGeneration(_ stream: AsyncThrowingStream<String, Error>, token: Int) {
         generationTask = Task { [weak self] () async -> Void in
             var failure: Error? = nil
             do {
