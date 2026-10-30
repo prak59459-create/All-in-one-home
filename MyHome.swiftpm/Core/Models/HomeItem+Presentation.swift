@@ -41,16 +41,22 @@ extension HomeItem {
         case .openURL:
             return "外部リンク。開く前に確認します"
         case .feature(let feature):
-            if feature.state.canOpen {
-                return feature.state == .stub ? "スタブです。実際の処理は行いません" : "アプリ内の機能を開きます"
-            }
-            return "\(feature.state.label)の機能です"
+            return HomeItem.featureHint(for: feature.state)
         case .folder(let items):
             return "フォルダ。\(items.count) 個の項目があります"
         }
     }
 
-    private static func badge(for state: FeatureState) -> HomeItemBadge? {
+    /// 機能の項目の読み上げの補足（状態を指定してテストできるように分けた）。
+    static func featureHint(for state: FeatureState) -> String {
+        if state.canOpen {
+            return state == .stub ? "スタブです。実際の処理は行いません" : "アプリ内の機能を開きます"
+        }
+        return "\(state.label)の機能です"
+    }
+
+    /// 機能の状態ごとの印（状態を指定してテストできるように分けた）。
+    static func badge(for state: FeatureState) -> HomeItemBadge? {
         switch state {
         case .available: return nil
         case .stub: return .stub

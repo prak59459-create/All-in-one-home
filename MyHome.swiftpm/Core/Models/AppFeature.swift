@@ -30,21 +30,24 @@ enum AppFeature: String, CaseIterable, Codable, Sendable {
     var state: FeatureState {
         switch self {
         case .settings, .featureStatus, .timer: return .available
-        case .notes, .tasks, .calculator, .unitConverter, .textTools: return .available
+        case .notes, .tasks, .calculator, .unitConverter, .textTools, .weather: return .available
         case .aiAssistant:
             // 端末内モデル（Apple Intelligence）が使える端末だけ本物の AI。使えなければスタブだけなので、そう示す
             return LLMRuntime.isSystemModelAvailable ? .available : .stub
-        case .weather: return .planned(phase: 7)
         }
     }
 
-    /// 開けない機能をタップした時に表示する説明。
+    /// 開けない機能をタップした時に表示する説明。今は開けない機能はないが、準備中や OS の制限で開けない機能を足した時に使う。
     var unavailableDetail: String {
-        switch self {
-        case .weather:
-            return "天気は Phase 7 で実装する予定です（Open-Meteo）。通信は、設定でオンにするまで行いません。"
-        case .settings, .featureStatus, .aiAssistant, .notes, .tasks, .calculator, .unitConverter, .textTools, .timer:
+        switch state {
+        case .available, .stub:
             return "この機能は利用できます。"
+        case .planned(let phase):
+            return "Phase \(phase) で実装する予定です。"
+        case .needsPoC:
+            return "実現できるかを小さな試作（PoC）で確かめてから判断します。"
+        case .osLimited:
+            return "iPadOS の制限で、一般のアプリには作れません。"
         }
     }
 }

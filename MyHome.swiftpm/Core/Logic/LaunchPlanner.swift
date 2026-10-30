@@ -19,10 +19,15 @@ enum LaunchPlanner {
         case .openURL(let raw):
             return plan(forURL: raw)
         case .feature(let feature):
-            return feature.state.canOpen ? .openFeature(feature) : .explainUnavailable(feature)
+            return plan(for: feature, state: feature.state)
         case .folder:
             return .openFolder
         }
+    }
+
+    /// 機能を開くか、開けない理由を表示するか（状態を指定してテストできるように分けた）。
+    static func plan(for feature: AppFeature, state: FeatureState) -> LaunchPlan {
+        state.canOpen ? .openFeature(feature) : .explainUnavailable(feature)
     }
 
     private static func plan(forURL raw: String) -> LaunchPlan {

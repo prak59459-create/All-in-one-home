@@ -15,6 +15,7 @@ struct AIModelPanel: View {
                 if let option = selectedOption {
                     AIModelDescription(option: option)
                 }
+                UnavailableModelNotes(options: options, selectedID: selectedID)
             } else {
                 Label(statusTitle, systemImage: session.phase == .loading ? "hourglass" : "checkmark.circle")
                     .font(.headline)
@@ -84,6 +85,24 @@ struct AIModelDescription: View {
                     .font(.footnote)
                     .foregroundStyle(.orange)
             }
+        }
+    }
+}
+
+/// 選んでいないモデルが使えない時の理由（端末内モデルが使えずにスタブが選ばれた時、その理由が見えるように）。
+@MainActor
+struct UnavailableModelNotes: View {
+    let options: [AIProviderOption]
+    let selectedID: String
+
+    var body: some View {
+        let unavailable: [AIProviderOption] = options.filter { (option: AIProviderOption) -> Bool in
+            option.id != selectedID && !option.availability.isAvailable
+        }
+        ForEach(unavailable) { (option: AIProviderOption) in
+            Label("\(option.descriptor.displayName)は使えません。\(option.availability.reason ?? "")", systemImage: "info.circle")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 }

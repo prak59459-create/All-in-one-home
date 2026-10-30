@@ -29,7 +29,13 @@ enum FeatureStatusCatalog {
                 .available,
                 "データはミニアプリごとに別のファイルへ自動で保存し、開いた時だけ読み込みます。iCloud での同期はしません。"
             ),
-            entry("update", "ソフトウェアアップデート", .available, "設定から。GitHub のブランチから変わったファイルだけを書き込みます。書き込んだ後は Swift Playgrounds で実行し直してください（アプリ自身はビルドし直せません）。")
+            entry("update", "ソフトウェアアップデート", .available, "設定から。GitHub のブランチから変わったファイルだけを書き込みます。書き込んだ後は Swift Playgrounds で実行し直してください（アプリ自身はビルドし直せません）。"),
+            entry(
+                "weather",
+                "天気（Open-Meteo）",
+                .available,
+                "通信は、天気の画面でオンにするまで行いません。位置情報は使わず、都市名で探した場所の天気を表示します。前回の天気は通信できない時も表示します。"
+            )
         ]
         return entries
     }
@@ -43,7 +49,6 @@ enum FeatureStatusCatalog {
 
     private static func planned() -> [FeatureStatusEntry] {
         let entries: [FeatureStatusEntry] = [
-            entry("weather", "天気", .planned(phase: 7), "天気 API は未設定です。"),
             entry("backup", "バックアップと復元", .planned(phase: 9), "")
         ]
         return entries
@@ -65,7 +70,7 @@ enum FeatureStatusCatalog {
         if LLMRuntime.isSystemModelAvailable {
             return entry("ai", "AI アシスタント", .available, "Apple の端末内モデルで答えます。入力した文章は端末の外に送りません。読み込みは AI 画面でボタンを押した時だけです。")
         }
-        return entry("ai", "AI アシスタント", .stub, "この端末では Apple の端末内モデルが使えないため、スタブ（決まった文を返すだけ）です。理由は AI 画面に表示します。llama.cpp などの他のモデルは PoC で確認中です。")
+        return entry("ai", "AI アシスタント", .stub, "この端末では Apple の端末内モデルが使えないため、スタブ（決まった文を返すだけ）です。理由は AI 画面に表示します。llama.cpp は Swift Playgrounds のアプリでは使えない見込みです（別ブランチの PoC の結果）。")
     }
 
     private static func entry(_ id: String, _ title: String, _ state: FeatureState, _ note: String) -> FeatureStatusEntry {

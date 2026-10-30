@@ -3,7 +3,12 @@ import XCTest
 
 final class LaunchTests: XCTestCase {
     func testPlannedFeatureIsExplainedInsteadOfOpened() {
-        XCTAssertEqual(LaunchPlanner.plan(for: .feature(.weather)), .explainUnavailable(.weather))
+        // Phase 7 で準備中の機能はなくなったので、状態を指定して確かめる
+        XCTAssertEqual(LaunchPlanner.plan(for: .weather, state: .planned(phase: 7)), .explainUnavailable(.weather))
+        XCTAssertEqual(LaunchPlanner.plan(for: .weather, state: .osLimited), .explainUnavailable(.weather))
+        XCTAssertEqual(LaunchPlanner.plan(for: .weather, state: .needsPoC), .explainUnavailable(.weather))
+        XCTAssertEqual(LaunchPlanner.plan(for: .weather, state: .available), .openFeature(.weather))
+        XCTAssertEqual(LaunchPlanner.plan(for: .feature(.weather)), .openFeature(.weather), "天気は Phase 7 で使えるようになった")
     }
 
     func testAvailableAndStubFeaturesOpen() {
@@ -33,14 +38,17 @@ final class LaunchTests: XCTestCase {
     func testBadgesDistinguishLinksStubsAndPlannedItems() {
         XCTAssertEqual(item(.openURL("https://example.com")).badge, .externalLink)
         XCTAssertEqual(item(.feature(.aiAssistant)).badge, .stub)
-        XCTAssertEqual(item(.feature(.weather)).badge, .planned)
+        XCTAssertNil(item(.feature(.weather)).badge, "天気は Phase 7 で使えるようになった")
+        XCTAssertEqual(HomeItem.badge(for: .planned(phase: 9)), .planned)
+        XCTAssertEqual(HomeItem.badge(for: .osLimited), .planned)
         XCTAssertNil(item(.feature(.settings)).badge)
     }
 
     func testAccessibilityHintsMentionState() {
         XCTAssertTrue(item(.openURL("https://example.com")).accessibilityHint.contains("確認"))
         XCTAssertTrue(item(.feature(.aiAssistant)).accessibilityHint.contains("スタブ"))
-        XCTAssertTrue(item(.feature(.weather)).accessibilityHint.contains("準備中"))
+        XCTAssertTrue(HomeItem.featureHint(for: .planned(phase: 9)).contains("準備中"))
+        XCTAssertEqual(item(.feature(.weather)).accessibilityHint, "アプリ内の機能を開きます")
     }
 
     @MainActor
@@ -77,7 +85,7 @@ final class LaunchTests: XCTestCase {
         router.launch(item(.feature(.featureStatus)))
         XCTAssertEqual(router.sheet, .feature(.featureStatus))
         router.launch(item(.feature(.weather)))
-        XCTAssertEqual(router.sheet, .unavailable(.weather))
+        XCTAssertEqual(router.sheet, .feature(.weather), "天気は Phase 7 で使えるようになった")
         router.launch(item(.feature(.calculator)))
         XCTAssertEqual(router.sheet, .feature(.calculator), "電卓は Phase 5 で使えるようになった")
         router.launch(item(.feature(.timer)))
@@ -89,7 +97,7 @@ final class LaunchTests: XCTestCase {
         let router = AppRouter()
         LaunchOptions(arguments: ["MyHome", "-MyHomeOpenFeature", "calculator"]).apply(to: router)
         XCTAssertEqual(router.sheet, .feature(.calculator))
-        XCTAssertNil(LaunchOptions(arguments: ["MyHome", "-MyHomeOpenFeature", "weather"]).openFeature, "準備中の機能は開かない")
+        XCTAssertEqual(LaunchOptions(arguments: ["MyHome", "-MyHomeOpenFeature", "weather"]).openFeature, .weather)
         XCTAssertNil(LaunchOptions(arguments: ["MyHome", "-MyHomeOpenFeature", "unknown"]).openFeature)
     }
 

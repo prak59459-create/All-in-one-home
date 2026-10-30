@@ -55,7 +55,7 @@ struct FeatureDestinationView: View {
         case .textTools:
             TextToolsAppView()
         case .weather:
-            UnavailableFeatureView(feature: feature)
+            WeatherAppView()
         }
     }
 }
