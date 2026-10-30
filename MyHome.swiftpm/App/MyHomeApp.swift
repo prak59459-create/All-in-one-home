@@ -9,6 +9,7 @@ struct MyHomeApp: App {
     @State private var settings: SettingsStore
     @State private var persistence: PersistenceController
     @State private var timers: TimerStore
+    @State private var miniApps: MiniAppLibrary
     @State private var router: AppRouter
     private let images: ImageFileStore?
     @Environment(\.scenePhase) private var scenePhase
@@ -32,6 +33,7 @@ struct MyHomeApp: App {
         _settings = State(initialValue: boot.settings)
         _persistence = State(initialValue: boot.persistence)
         _timers = State(initialValue: boot.timers)
+        _miniApps = State(initialValue: boot.miniApps)
         _router = State(initialValue: router)
         images = boot.images
     }
@@ -43,12 +45,16 @@ struct MyHomeApp: App {
                 .environment(settings)
                 .environment(persistence)
                 .environment(timers)
+                .environment(miniApps)
                 .environment(router)
                 .environment(\.imageStore, images)
                 .onChange(of: scenePhase) { _, phase in
-                    // 裏に回る時は待たずに保存する（F0837。裏に回った後は OS が止めることがある）
+                    // 裏に回る時は待たずに保存する（F0837。裏に回った後は OS が止めることがある）。ミニアプリのデータも同じ
                     if phase != .active {
-                        Task { await persistence.flush() }
+                        Task {
+                            await persistence.flush()
+                            await miniApps.flushAll()
+                        }
                     } else {
                         timers.refresh()
                     }

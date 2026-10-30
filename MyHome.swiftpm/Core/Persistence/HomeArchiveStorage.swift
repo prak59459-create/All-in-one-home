@@ -11,12 +11,14 @@ protocol HomeArchiveStorage: Sendable {
 }
 
 /// アプリ専用の領域（Application Support/MyHome/home.json）に保存する。
+/// ミニアプリのデータ（Application Support/MyHome/Apps/notes.json など）も、baseName を変えて同じ規則で保存する。
 struct FileHomeArchiveStorage: HomeArchiveStorage {
-    static let fileName: String = "home.json"
     let directory: URL
+    /// ファイル名の元。"home" なら home.json、退避した時は home.unreadable-….json。
+    var baseName: String = "home"
 
     var fileURL: URL {
-        directory.appendingPathComponent(FileHomeArchiveStorage.fileName, isDirectory: false)
+        directory.appendingPathComponent("\(baseName).json", isDirectory: false)
     }
 
     static func standard() throws -> FileHomeArchiveStorage {
@@ -55,7 +57,7 @@ struct FileHomeArchiveStorage: HomeArchiveStorage {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let base: String = "home.\(label)-\(formatter.string(from: Date()))"
+        let base: String = "\(baseName).\(label)-\(formatter.string(from: Date()))"
         var name: String = base + ".json"
         var counter: Int = 2
         while FileManager.default.fileExists(atPath: directory.appendingPathComponent(name).path) {

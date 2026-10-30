@@ -58,7 +58,7 @@ scripts/measure-app-build.sh
 
   iOS Simulator（最新ランタイムの iPad）向けに、クリーン / 変更なし / View 1ファイル変更 / Core 型のインターフェース変更の4種類を計測し（クリーン以外は3回の中央値。回数は `REPEAT` で変更可）、型チェックが 100ms を超えた関数・式を一覧にする。結果とログは `build-logs/app/`。
 
-- Simulator で起動確認（`measure-app-build.sh` の後に実行。`SIM_UDID` は計測時に表示された値）。初期レイアウト、項目 0 件、1ページ 150 件、保存ファイルからの復元（`scripts/fixtures/home-restore.json`、形式の版 1）、フォルダ入りの保存ファイル（`home-folder.json`）での編集モードとフォルダを開いた状態、壊れた保存ファイルの7通りで起動し、それぞれ 10 秒後も動いているかを確認してスクリーンショットを撮る。復元と破損の2通りでは、保存ファイルが読まれたか・別名に退避されたかも確かめる:
+- Simulator で起動確認（`measure-app-build.sh` の後に実行。`SIM_UDID` は計測時に表示された値）。初期レイアウト、項目 0 件、1ページ 150 件、保存ファイルからの復元（`scripts/fixtures/home-restore.json`、形式の版 1）、フォルダ入りの保存ファイル（`home-folder.json`）での編集モードとフォルダを開いた状態、ミニアプリ5つ（`scripts/fixtures/apps/*.json` を置いて、それぞれを開いた状態）、壊れた保存ファイルの12通りで起動し、それぞれ 10 秒後も動いているかを確認してスクリーンショットを撮る。復元・ミニアプリ・破損では、保存ファイルが読まれたか・別名に退避されたかも確かめる:
 
 ```bash
 SIM_UDID=<UDID> scripts/smoke-test-simulator.sh
@@ -69,9 +69,11 @@ SIM_UDID=<UDID> scripts/smoke-test-simulator.sh
   - `-MyHomeSampleItemsPerPage <件数>`: 1ページあたりの件数（既定 60）
   - `-MyHomeStartEditing`: 編集モードで起動する（スクリーンショットで編集中の表示を確かめるため）
   - `-MyHomeOpenFolder <項目 ID>`: そのフォルダを開いて起動する
+  - `-MyHomeOpenFeature <機能の名前>`: その機能（`notes`・`tasks`・`calculator`・`unitConverter`・`textTools` など。`AppFeature` の rawValue）を開いて起動する。準備中の機能は開かない
   - 検証用の配置で起動した時は保存しない（利用者の保存データを上書きしないため）。設定画面の「保存」に理由を表示する。
 
 保存ファイルの場所（Simulator）: `xcrun simctl get_app_container <UDID> com.example.myhome data` の下の `Library/Application Support/MyHome/home.json`。
+ミニアプリのデータは同じフォルダの `Apps/<名前>.json`（`notes`・`tasks`・`calculator`・`converter`・`texttools`）。
 
 GitHub Actions（`.github/workflows/ci.yml` の `app-ios` ジョブ）でも同じスクリプトを Xcode 16.4（iOS 18 SDK）と Xcode 26.3（iOS 26 SDK）で実行し、ジョブのサマリーに結果表を出す。スクリーンショットとログはアーティファクト `app-build-logs-xcode-<版>` に保存される。
 

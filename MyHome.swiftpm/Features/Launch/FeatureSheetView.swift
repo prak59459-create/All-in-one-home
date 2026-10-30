@@ -44,7 +44,17 @@ struct FeatureDestinationView: View {
             AIStubChatView()
         case .timer:
             TimerAppView()
-        case .notes, .calculator:
+        case .notes:
+            NotesAppView()
+        case .tasks:
+            TodoAppView()
+        case .calculator:
+            CalculatorAppView()
+        case .unitConverter:
+            UnitConverterAppView()
+        case .textTools:
+            TextToolsAppView()
+        case .weather:
             UnavailableFeatureView(feature: feature)
         }
     }

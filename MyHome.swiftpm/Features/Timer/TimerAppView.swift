@@ -147,6 +147,7 @@ struct NewCountdownRow: View {
     }
 }
 
+/// ストップウォッチ。Xcode 16.4 で body の型チェックに 122ms かかったため、ボタンとラップの一覧を別の View に分けた。
 @MainActor
 struct StopwatchPanel: View {
     @Environment(TimerStore.self) private var timers
@@ -160,25 +161,8 @@ struct StopwatchPanel: View {
             } else {
                 elapsedText(at: Date())
             }
-            HStack {
-                Button(timers.board.stopwatch.isRunning ? "一時停止" : "開始") {
-                    if timers.board.stopwatch.isRunning {
-                        timers.pauseStopwatch()
-                    } else {
-                        timers.startStopwatch()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                Button("ラップ") { timers.lapStopwatch() }
-                    .buttonStyle(.bordered)
-                    .disabled(!timers.board.stopwatch.isRunning)
-                Button("リセット") { timers.resetStopwatch() }
-                    .buttonStyle(.bordered)
-            }
-            ForEach(timers.board.stopwatch.laps.indices.reversed(), id: \.self) { index in
-                Text("ラップ \(index + 1)  \(TimeText.stopwatch(timers.board.stopwatch.laps[index]))")
-                    .font(.footnote.monospacedDigit())
-            }
+            StopwatchControls()
+            StopwatchLapList(laps: timers.board.stopwatch.laps)
         }
     }
 
@@ -186,5 +170,52 @@ struct StopwatchPanel: View {
         Text(TimeText.stopwatch(timers.board.stopwatch.elapsed(at: date)))
             .font(.system(size: 44, weight: .light, design: .rounded))
             .monospacedDigit()
+    }
+}
+
+@MainActor
+struct StopwatchControls: View {
+    @Environment(TimerStore.self) private var timers
+
+    var body: some View {
+        let isRunning: Bool = timers.board.stopwatch.isRunning
+        HStack {
+            Button(isRunning ? "一時停止" : "開始") {
+                toggle(isRunning: isRunning)
+            }
+            .buttonStyle(.borderedProminent)
+            Button("ラップ") { timers.lapStopwatch() }
+                .buttonStyle(.bordered)
+                .disabled(!isRunning)
+            Button("リセット") { timers.resetStopwatch() }
+                .buttonStyle(.bordered)
+        }
+    }
+
+    private func toggle(isRunning: Bool) {
+        if isRunning {
+            timers.pauseStopwatch()
+        } else {
+            timers.startStopwatch()
+        }
+    }
+}
+
+/// ラップの一覧（新しい順）。
+@MainActor
+struct StopwatchLapList: View {
+    let laps: [TimeInterval]
+
+    var body: some View {
+        ForEach(rows, id: \.self) { (row: String) in
+            Text(verbatim: row)
+                .font(.footnote.monospacedDigit())
+        }
+    }
+
+    private var rows: [String] {
+        laps.indices.reversed().map { (index: Int) -> String in
+            "ラップ \(index + 1)  " + TimeText.stopwatch(laps[index])
+        }
     }
 }

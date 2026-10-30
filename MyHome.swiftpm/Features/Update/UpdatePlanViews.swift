@@ -90,6 +90,7 @@ struct UpdateFileList: View {
 struct UpdateStatusSection: View {
     let controller: UpdateController
     @Environment(PersistenceController.self) private var persistence
+    @Environment(MiniAppLibrary.self) private var miniApps
 
     var body: some View {
         switch controller.phase {
@@ -114,6 +115,7 @@ struct UpdateStatusSection: View {
                 Button("MyHome を終了する") {
                     Task {
                         await persistence.flush()
+                        await miniApps.flushAll()
                         exit(0)
                     }
                 }

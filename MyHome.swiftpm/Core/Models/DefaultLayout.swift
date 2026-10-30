@@ -8,7 +8,10 @@ enum DefaultLayout {
     static func homePage() -> HomePage {
         let items: [HomeItem] = [
             item(for: .notes),
+            item(for: .tasks),
             item(for: .calculator),
+            item(for: .unitConverter),
+            item(for: .textTools),
             item(for: .timer),
             link("link.swift", "Swift", url: "https://www.swift.org", symbol: "swift", tint: 0xF05138),
             link("link.wikipedia", "Wikipedia", url: "https://ja.wikipedia.org", symbol: "book.closed.fill", tint: 0x4B5563),
@@ -59,8 +62,12 @@ enum DefaultLayout {
         case .featureStatus: return FeatureIconStyle(symbol: "checklist", tint: 0x0D9488)
         case .aiAssistant: return FeatureIconStyle(symbol: "sparkles", tint: 0x7C3AED)
         case .notes: return FeatureIconStyle(symbol: "note.text", tint: 0xF5B700)
+        case .tasks: return FeatureIconStyle(symbol: "checkmark.square.fill", tint: 0x2563EB)
         case .calculator: return FeatureIconStyle(symbol: "plus.forwardslash.minus", tint: 0xF97316)
+        case .unitConverter: return FeatureIconStyle(symbol: "arrow.left.arrow.right", tint: 0x059669)
+        case .textTools: return FeatureIconStyle(symbol: "textformat", tint: 0x0891B2)
         case .timer: return FeatureIconStyle(symbol: "timer", tint: 0xEF4444)
+        case .weather: return FeatureIconStyle(symbol: "cloud.sun.fill", tint: 0x0284C7)
         }
     }
 

@@ -33,7 +33,10 @@ struct WidgetCard: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
             .overlay(alignment: .topLeading) {
                 if router.isEditing {
+                    // 中の文字（カレンダーの月など）に重ならないよう、角に寄せる。
+                    // はみ出しは 3pt で、WidgetRow の上下の余白（8pt）に収まるので切れない
                     RemoveWidgetButton(widget: widget)
+                        .offset(x: -8, y: -8)
                 }
             }
             .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))

@@ -1,0 +1,24 @@
+{
+  "app" : "notes",
+  "content" : {
+    "notes" : [
+      {
+        "body" : "牛乳\nパン\n卵",
+        "createdAt" : 815000000,
+        "id" : "note.fixture.shopping",
+        "isPinned" : true,
+        "title" : "買い物（確認用）",
+        "updatedAt" : 815000600
+      },
+      {
+        "body" : "Phase 5 のミニアプリを Simulator で確認する。\n2 行目",
+        "createdAt" : 815000100,
+        "id" : "note.fixture.memo",
+        "isPinned" : false,
+        "title" : "",
+        "updatedAt" : 815000300
+      }
+    ]
+  },
+  "schemaVersion" : 1
+}

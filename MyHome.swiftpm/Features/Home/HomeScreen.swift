@@ -73,6 +73,7 @@ struct HomeScreen_Previews: PreviewProvider {
             .environment(boot.settings)
             .environment(boot.persistence)
             .environment(boot.timers)
+            .environment(boot.miniApps)
             .environment(AppRouter())
     }
 }

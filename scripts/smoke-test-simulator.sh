@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# ビルド済みアプリを iOS Simulator にインストールし、次の5通りで起動して、それぞれ数秒後もプロセスが動いているか確認する。macOS 専用。
+# ビルド済みアプリを iOS Simulator にインストールし、次の通りに起動して、それぞれ数秒後もプロセスが動いているか確認する。macOS 専用。
 #   default : 初期レイアウト（保存ファイルなし）
 #   empty   : 項目 0 件（-MyHomeSampleItems 0。検証用の起動なので保存しない）
 #   many    : 1ページに 150 件（-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150）
 #   restore : 保存ファイル（scripts/fixtures/home-restore.json、形式の版 1）を置いて起動し、その配置で復元されるか（T2-7、版 1 → 2 の移行）
 #   editing : フォルダとウィジェット入りの保存ファイル（home-folder.json、版 3）で、編集モードで起動（-MyHomeStartEditing）
 #   folder  : 同じファイルで、フォルダを開いて起動（-MyHomeOpenFolder folder.check）
+#   app-*   : ミニアプリの保存ファイル（scripts/fixtures/apps/*.json）を置き、そのミニアプリを開いて起動（-MyHomeOpenFeature <名前>）。
+#             メモ・タスク・電卓・単位変換・テキストツールの5つ。保存ファイルが読めた（別名に退避されていない）かも確かめる
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
@@ -93,6 +95,19 @@ if [ -z "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
   record_check folder-file PASS "フォルダ入りの保存ファイルを読み込めた（表示は editing.png / folder.png）"
 else
   record_check folder-file FAIL "フォルダ入りの保存ファイルが読み込めず、別名に退避された"
+fi
+
+# ミニアプリの保存先は Library/Application Support/MyHome/Apps/<名前>.json（MiniAppLibrary）
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+mkdir -p "$DATA_DIR/Apps"
+cp "$ROOT"/scripts/fixtures/apps/*.json "$DATA_DIR/Apps/"
+for feature in notes tasks calculator unitConverter textTools; do
+  launch_case "app-$feature" -MyHomeOpenFeature "$feature"
+done
+if [ -z "$(find "$DATA_DIR/Apps" -name '*.unreadable-*.json')" ]; then
+  record_check miniapp-files PASS "ミニアプリの保存ファイルを読み込めた（表示は app-*.png）"
+else
+  record_check miniapp-files FAIL "ミニアプリの保存ファイルが読み込めず、別名に退避された"
 fi
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true

@@ -1,19 +1,23 @@
 import Foundation
 
 /// 起動引数による検証用の設定。Simulator や Xcode から起動した時だけ使う（Swift Playgrounds では指定できない）。
-/// 例: `-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150`、`-MyHomeStartEditing`、`-MyHomeOpenFolder <項目 ID>`
-/// 操作を自動で行えない Simulator の起動テストで、編集中やフォルダを開いた画面のスクリーンショットを撮るために使う。
+/// 例: `-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150`、`-MyHomeStartEditing`、`-MyHomeOpenFolder <項目 ID>`、
+/// `-MyHomeOpenFeature <機能の rawValue>`（例: calculator）。
+/// 操作を自動で行えない Simulator の起動テストで、編集中・フォルダ・ミニアプリを開いた画面のスクリーンショットを撮るために使う。
 struct LaunchOptions: Hashable, Sendable {
     static let sampleItemsFlag: String = "-MyHomeSampleItems"
     static let sampleItemsPerPageFlag: String = "-MyHomeSampleItemsPerPage"
     static let startEditingFlag: String = "-MyHomeStartEditing"
     static let openFolderFlag: String = "-MyHomeOpenFolder"
+    static let openFeatureFlag: String = "-MyHomeOpenFeature"
     static let defaultItemsPerPage: Int = 60
 
     var sampleItemCount: Int?
     var sampleItemsPerPage: Int
     var startsEditing: Bool
     var openFolderID: String?
+    /// 起動時に開く機能。開けない機能（準備中など）や知らない名前は無視する。
+    var openFeature: AppFeature?
 
     init(arguments: [String]) {
         sampleItemCount = LaunchOptions.intValue(after: LaunchOptions.sampleItemsFlag, in: arguments)
@@ -21,6 +25,8 @@ struct LaunchOptions: Hashable, Sendable {
         sampleItemsPerPage = perPage ?? LaunchOptions.defaultItemsPerPage
         startsEditing = arguments.contains(LaunchOptions.startEditingFlag)
         openFolderID = LaunchOptions.value(after: LaunchOptions.openFolderFlag, in: arguments)
+        let feature: AppFeature? = LaunchOptions.value(after: LaunchOptions.openFeatureFlag, in: arguments).flatMap(AppFeature.init(rawValue:))
+        openFeature = feature?.state.canOpen == true ? feature : nil
     }
 
     static func current() -> LaunchOptions {
@@ -40,7 +46,7 @@ struct LaunchOptions: Hashable, Sendable {
         return SampleLayout.stress(itemCount: count, itemsPerPage: sampleItemsPerPage)
     }
 
-    /// 起動時の画面の状態（編集中・開くフォルダ）を反映する。
+    /// 起動時の画面の状態（編集中・開くフォルダ・開く機能）を反映する。
     @MainActor
     func apply(to router: AppRouter) {
         if startsEditing {
@@ -48,6 +54,9 @@ struct LaunchOptions: Hashable, Sendable {
         }
         if let openFolderID {
             router.openFolderID = openFolderID
+        }
+        if let openFeature {
+            router.sheet = .feature(openFeature)
         }
     }
 
