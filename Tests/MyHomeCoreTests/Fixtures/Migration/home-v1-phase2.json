@@ -1,0 +1,153 @@
+{
+  "layout" : {
+    "dock" : [
+      {
+        "action" : {
+          "feature" : "settings",
+          "kind" : "feature"
+        },
+        "id" : "feature.settings",
+        "symbolName" : "gearshape.fill",
+        "tint" : "#6B7280",
+        "title" : "設定"
+      },
+      {
+        "action" : {
+          "feature" : "featureStatus",
+          "kind" : "feature"
+        },
+        "id" : "feature.featureStatus",
+        "symbolName" : "checklist",
+        "tint" : "#0D9488",
+        "title" : "機能の状況"
+      },
+      {
+        "action" : {
+          "feature" : "aiAssistant",
+          "kind" : "feature"
+        },
+        "id" : "feature.aiAssistant",
+        "symbolName" : "sparkles",
+        "tint" : "#7C3AED",
+        "title" : "AI"
+      },
+      {
+        "action" : {
+          "kind" : "url",
+          "url" : "shortcuts://"
+        },
+        "id" : "link.shortcuts",
+        "symbolName" : "square.stack.3d.up.fill",
+        "tint" : "#DB2777",
+        "title" : "ショートカット"
+      }
+    ],
+    "pages" : [
+      {
+        "id" : "page.home",
+        "items" : [
+          {
+            "action" : {
+              "feature" : "notes",
+              "kind" : "feature"
+            },
+            "id" : "feature.notes",
+            "symbolName" : "note.text",
+            "tint" : "#F5B700",
+            "title" : "メモ"
+          },
+          {
+            "action" : {
+              "feature" : "calculator",
+              "kind" : "feature"
+            },
+            "id" : "feature.calculator",
+            "symbolName" : "plus.forwardslash.minus",
+            "tint" : "#F97316",
+            "title" : "電卓"
+          },
+          {
+            "action" : {
+              "feature" : "timer",
+              "kind" : "feature"
+            },
+            "id" : "feature.timer",
+            "symbolName" : "timer",
+            "tint" : "#EF4444",
+            "title" : "タイマー"
+          },
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://www.swift.org"
+            },
+            "id" : "link.swift",
+            "symbolName" : "swift",
+            "tint" : "#F05138",
+            "title" : "Swift"
+          },
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://support.apple.com/ja-jp"
+            },
+            "id" : "link.apple-support",
+            "symbolName" : "questionmark.circle.fill",
+            "tint" : "#0EA5E9",
+            "title" : "Apple サポート"
+          }
+        ]
+      },
+      {
+        "id" : "page.links",
+        "items" : [
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://developer.apple.com/documentation/swiftui"
+            },
+            "id" : "link.swiftui-docs",
+            "symbolName" : "doc.text.fill",
+            "tint" : "#2563EB",
+            "title" : "SwiftUI 資料"
+          },
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://github.com"
+            },
+            "id" : "link.github",
+            "symbolName" : "chevron.left.forwardslash.chevron.right",
+            "tint" : "#24292F",
+            "title" : "GitHub"
+          },
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://forums.swift.org"
+            },
+            "id" : "link.swift-forums",
+            "symbolName" : "bubble.left.and.bubble.right.fill",
+            "tint" : "#EA580C",
+            "title" : "Swift Forums"
+          },
+          {
+            "action" : {
+              "kind" : "url",
+              "url" : "https://example.com/phase2"
+            },
+            "id" : "link.phase2",
+            "symbolName" : "link",
+            "tint" : "#3366CC",
+            "title" : "Phase 2 のリンク"
+          }
+        ]
+      }
+    ]
+  },
+  "schemaVersion" : 1,
+  "settings" : {
+    "appearance" : "dark",
+    "themeID" : "forest"
+  }
+}

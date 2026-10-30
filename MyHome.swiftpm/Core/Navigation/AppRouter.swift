@@ -73,6 +73,8 @@ final class AppRouter {
     /// 開いているフォルダ（項目 ID）。ホーム画面の上に重ねて表示する（シートにしないのは、
     /// フォルダの中から開いたリンクの確認ダイアログや機能のシートを、ホーム画面からそのまま出せるようにするため）。
     var openFolderID: String?
+    /// 設定の中で開いているページ。設定を閉じたら空にする。
+    var settingsPath: [SettingsPage] = []
 
     init() {}
 

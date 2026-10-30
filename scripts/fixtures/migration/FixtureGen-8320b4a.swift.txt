@@ -1,0 +1,27 @@
+import Foundation
+import XCTest
+@testable import MyHomeCore
+
+/// 移行テスト用: Phase 7（天気の形式の版 1。設定に動きと文字の大きさがない最後の版）のコードで保存ファイルを作る。
+final class FixtureGenTests: XCTestCase {
+    func testGenerate() throws {
+        guard let out = ProcessInfo.processInfo.environment["FIXTURE_OUT"] else { return }
+        let folder = URL(fileURLWithPath: out)
+        var weather: WeatherData = WeatherData.initial
+        weather.isNetworkEnabled = true
+        weather.temperatureUnit = .fahrenheit
+        weather.windSpeedUnit = .kilometersPerHour
+        try weather.add(WeatherFixtures.tokyo)
+        try weather.add(WeatherFixtures.osaka)
+        let now = Date(timeIntervalSince1970: TimeInterval(WeatherFixtures.dayStart))
+        let snapshot: WeatherSnapshot = try OpenMeteoDecoding.snapshot(
+            from: WeatherFixtures.forecastJSON(), locationID: WeatherFixtures.tokyo.id, fetchedAt: now, keptHours: 48
+        )
+        weather.store(snapshot)
+        try MiniAppArchiveCodec.encode(weather).write(to: folder.appendingPathComponent("apps-v1-weather.json"))
+
+        let settings = SavedSettings(themeID: "forest", appearance: .dark, wallpaper: .themeGradient, showsSeconds: true)
+        let saved = SavedHome(layout: DefaultLayout.make(), settings: settings)
+        try HomeArchiveCodec.encode(saved).write(to: folder.appendingPathComponent("home-v3-phase7.json"))
+    }
+}

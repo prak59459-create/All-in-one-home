@@ -18,6 +18,7 @@ enum HelpCatalog {
         [
             HelpSection(id: "basics", title: "基本の操作", topics: basics()),
             HelpSection(id: "apps", title: "ミニアプリと機能", topics: apps()),
+            HelpSection(id: "data", title: "データ", topics: data()),
             HelpSection(id: "trouble", title: "困った時", topics: trouble()),
             HelpSection(id: "keyboard", title: "キーボード", topics: keyboard())
         ]
@@ -91,6 +92,25 @@ enum HelpCatalog {
         ]
     }
 
+    private static func data() -> [HelpTopic] {
+        [
+            HelpTopic(id: "backup", title: "バックアップと復元", symbol: "externaldrive", steps: [
+                "設定 → バックアップと復元 の「ファイルに書き出す」で、ホーム画面の配置・設定・タイマー、ミニアプリのデータ、アイコンと壁紙の画像を 1 つのファイルにまとめ、ファイルアプリ（iCloud Drive など）に保存します。",
+                "「この iPad に保存」は MyHome の中に残します。MyHome を削除すると一緒に消えます。",
+                "「ファイルから復元」でファイルを選ぶと、中身を確かめてから、戻すもの（ホーム画面・ミニアプリごと）を選んで復元できます。",
+                "復元する前の状態は、自動で「この iPad のバックアップ」（復元の前）に残ります。元に戻したい時は、それを選んで復元します。",
+                "天気の通信のオン・オフは、復元しても今の設定のままです。動いていたタイマーは止めた状態で戻ります。"
+            ]),
+            HelpTopic(id: "erase", title: "すべてのデータを消す", symbol: "trash", steps: [
+                "設定 → バックアップと復元 の「すべてのデータを消す」で、初めて起動した時の状態に戻します。",
+                "消す前のデータは「この iPad のバックアップ」（消去の前）に残ります。残したくない時は、一覧から削除してください。"
+            ]),
+            HelpTopic(id: "privacy", title: "通信とデータの保存先", symbol: "hand.raised", steps: [
+                "設定 → このアプリについて に、使う OS の許可（ありません）、通信する相手、データの保存先、出典とライセンスをまとめています。"
+            ])
+        ]
+    }
+
     private static func trouble() -> [HelpTopic] {
         [
             HelpTopic(id: "save-failed", title: "「保存できませんでした」と出る", symbol: "exclamationmark.triangle", steps: [
@@ -104,6 +124,10 @@ enum HelpCatalog {
             HelpTopic(id: "after-update", title: "アップデートの後にうまく動かない", symbol: "clock.arrow.circlepath", steps: [
                 "設定 → ソフトウェアアップデート の「最後の更新の前に戻す」で、書き込む前の状態に戻せます。",
                 "戻した後は、Swift Playgrounds でもう一度実行してください。"
+            ]),
+            HelpTopic(id: "restore-failed", title: "「このバックアップは使えません」と出る", symbol: "externaldrive.badge.xmark", steps: [
+                "MyHome で書き出したバックアップのファイル（.json）かを確かめてください。新しい版の MyHome で作ったものは、アップデートしてから読み込みます。",
+                "中に 1 つでも読めないデータがあると、何も変えずに中止します。"
             ]),
             HelpTopic(id: "weather-stale", title: "天気が更新されない", symbol: "cloud.sun", steps: [
                 "天気の通信がオンになっているか、インターネットにつながっているかを確かめてください。",

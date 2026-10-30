@@ -1,13 +1,16 @@
 import SwiftUI
 
 /// 設定（テーマと外観）。変更は自動で保存し、保存の状態も表示する（F0807、F0838）。
+/// 中のページ（使い方・アップデート・バックアップ・このアプリについて）は AppRouter.settingsPath で開く。
 @MainActor
 struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
+    @Environment(AppRouter.self) private var router
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        @Bindable var navigation = router
+        NavigationStack(path: $navigation.settingsPath) {
             Form {
                 Section("テーマ") {
                     ThemePickerView()
@@ -17,17 +20,20 @@ struct SettingsView: View {
                 WallpaperSettingsSection()
                 clockSection
                 SaveStatusSection()
+                Section("データ") {
+                    NavigationLink(SettingsPage.backup.title, value: SettingsPage.backup)
+                }
                 Section("ソフトウェア") {
-                    NavigationLink("使い方と困った時") {
-                        HelpView()
-                    }
-                    NavigationLink("ソフトウェアアップデート") {
-                        SoftwareUpdateView()
-                    }
+                    NavigationLink(SettingsPage.help.title, value: SettingsPage.help)
+                    NavigationLink(SettingsPage.update.title, value: SettingsPage.update)
+                    NavigationLink(SettingsPage.about.title, value: SettingsPage.about)
                     LabeledContent("バージョン", value: AppInfo.version)
                 }
             }
             .navigationTitle("設定")
+            .navigationDestination(for: SettingsPage.self) { (page: SettingsPage) in
+                SettingsPageView(page: page)
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完了") {
@@ -35,6 +41,10 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+        .onDisappear {
+            // 次に設定を開いた時は、最初のページから
+            router.settingsPath = []
         }
     }
 
@@ -75,6 +85,25 @@ struct SettingsView: View {
                 }
             }
             .pickerStyle(.segmented)
+        }
+    }
+}
+
+/// 設定の中のページ。
+@MainActor
+struct SettingsPageView: View {
+    let page: SettingsPage
+
+    var body: some View {
+        switch page {
+        case .help:
+            HelpView()
+        case .update:
+            SoftwareUpdateView()
+        case .backup:
+            BackupSettingsView()
+        case .about:
+            AboutView()
         }
     }
 }

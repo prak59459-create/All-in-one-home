@@ -51,4 +51,11 @@ final class MiniAppLibrary {
             await document.flush()
         }
     }
+
+    /// 開いたことのあるミニアプリの保存をやめる（復元・消去でファイルを書き換える前に、flushAll の後で呼ぶ）。
+    func suspendAll(reason: String) {
+        for document in documents.values {
+            document.suspend(reason: reason)
+        }
+    }
 }

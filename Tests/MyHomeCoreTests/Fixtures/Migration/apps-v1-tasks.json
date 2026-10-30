@@ -1,0 +1,24 @@
+{
+  "app" : "tasks",
+  "content" : {
+    "items" : [
+      {
+        "createdAt" : 814968000,
+        "due" : "2026-11-02",
+        "id" : "task.1",
+        "isDone" : false,
+        "priority" : 3,
+        "title" : "書類を出す"
+      },
+      {
+        "completedAt" : 814968000,
+        "createdAt" : 814968000,
+        "id" : "task.2",
+        "isDone" : true,
+        "priority" : 0,
+        "title" : "傘を買う"
+      }
+    ]
+  },
+  "schemaVersion" : 1
+}

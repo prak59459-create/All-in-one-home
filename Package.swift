@@ -23,7 +23,9 @@ let package = Package(
         .testTarget(
             name: "MyHomeCoreTests",
             dependencies: ["MyHomeCore"],
-            path: "Tests/MyHomeCoreTests"
+            path: "Tests/MyHomeCoreTests",
+            // 移行テストの保存ファイル（古い版のコードで作ったもの）。テストからは #filePath を基に直接読む
+            exclude: ["Fixtures"]
         )
     ]
 )

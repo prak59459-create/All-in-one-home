@@ -1,0 +1,512 @@
+{
+  "app" : "weather",
+  "content" : {
+    "isNetworkEnabled" : true,
+    "locations" : [
+      {
+        "country" : "日本",
+        "id" : 1850147,
+        "latitude" : 35.6895,
+        "longitude" : 139.69171,
+        "name" : "東京",
+        "region" : "東京都",
+        "timeZoneID" : "Asia/Tokyo"
+      },
+      {
+        "country" : "日本",
+        "id" : 1853909,
+        "latitude" : 34.69374,
+        "longitude" : 135.50218,
+        "name" : "大阪市",
+        "region" : "大阪府",
+        "timeZoneID" : "Asia/Tokyo"
+      }
+    ],
+    "selectedLocationID" : 1853909,
+    "snapshots" : [
+      {
+        "current" : {
+          "apparentTemperature" : 13.9,
+          "humidity" : 62,
+          "isDay" : true,
+          "precipitation" : 0,
+          "temperature" : 15.3,
+          "time" : 1793338200,
+          "weatherCode" : 2,
+          "windDirection" : 23,
+          "windSpeed" : 11.5
+        },
+        "daily" : [
+          {
+            "date" : 1793286000,
+            "precipitationProbabilityMax" : 20,
+            "precipitationSum" : 0,
+            "sunrise" : 1793307900,
+            "sunset" : 1793346600,
+            "temperatureMax" : 18.2,
+            "temperatureMin" : 9.8,
+            "uvIndexMax" : 3.4,
+            "weatherCode" : 2
+          },
+          {
+            "date" : 1793372400,
+            "precipitationProbabilityMax" : 90,
+            "precipitationSum" : 12.4,
+            "sunrise" : 1793394300,
+            "sunset" : 1793433000,
+            "temperatureMax" : 16,
+            "temperatureMin" : 11.2,
+            "uvIndexMax" : 1.1,
+            "weatherCode" : 61
+          },
+          {
+            "date" : 1793458800,
+            "precipitationProbabilityMax" : 30,
+            "precipitationSum" : 0.2,
+            "sunrise" : 1793480700,
+            "sunset" : 1793519400,
+            "temperatureMax" : 17.4,
+            "temperatureMin" : 10,
+            "weatherCode" : 3
+          },
+          {
+            "date" : 1793545200,
+            "precipitationProbabilityMax" : 0,
+            "precipitationSum" : 0,
+            "sunrise" : 1793567100,
+            "sunset" : 1793605800,
+            "temperatureMax" : 19.9,
+            "temperatureMin" : 8.5,
+            "uvIndexMax" : 4,
+            "weatherCode" : 0
+          },
+          {
+            "date" : 1793631600,
+            "precipitationProbabilityMax" : 10,
+            "precipitationSum" : 0,
+            "sunrise" : 1793653500,
+            "sunset" : 1793692200,
+            "temperatureMax" : 20.1,
+            "temperatureMin" : 9.1,
+            "uvIndexMax" : 4.2,
+            "weatherCode" : 1
+          },
+          {
+            "date" : 1793718000,
+            "precipitationProbabilityMax" : 60,
+            "precipitationSum" : 3.1,
+            "sunrise" : 1793739900,
+            "sunset" : 1793778600,
+            "temperatureMax" : 15.5,
+            "temperatureMin" : 7,
+            "uvIndexMax" : 2,
+            "weatherCode" : 80
+          },
+          {
+            "date" : 1793804400,
+            "precipitationProbabilityMax" : 70,
+            "precipitationSum" : 4,
+            "sunrise" : 1793826300,
+            "sunset" : 1793865000,
+            "temperatureMax" : 9,
+            "temperatureMin" : 1.5,
+            "uvIndexMax" : 1,
+            "weatherCode" : 71
+          }
+        ],
+        "fetchedAt" : 1793286000,
+        "hourly" : [
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 10,
+            "time" : 1793286000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 10.5,
+            "time" : 1793289600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 11,
+            "time" : 1793293200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 11.5,
+            "time" : 1793296800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 12,
+            "time" : 1793300400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 12.5,
+            "time" : 1793304000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 13,
+            "time" : 1793307600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 13.5,
+            "time" : 1793311200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 14,
+            "time" : 1793314800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 14.5,
+            "time" : 1793318400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 15,
+            "time" : 1793322000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 15.5,
+            "time" : 1793325600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 16,
+            "time" : 1793329200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 16.5,
+            "time" : 1793332800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 17,
+            "time" : 1793336400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "time" : 1793340000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 18,
+            "time" : 1793343600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 18.5,
+            "time" : 1793347200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 19,
+            "time" : 1793350800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 19.5,
+            "time" : 1793354400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 20,
+            "time" : 1793358000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 20.5,
+            "time" : 1793361600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 21,
+            "time" : 1793365200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 21.5,
+            "time" : 1793368800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 10,
+            "time" : 1793372400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 10.5,
+            "time" : 1793376000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 11,
+            "time" : 1793379600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 11.5,
+            "time" : 1793383200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 12,
+            "time" : 1793386800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 12.5,
+            "time" : 1793390400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 13,
+            "time" : 1793394000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 13.5,
+            "time" : 1793397600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 14,
+            "time" : 1793401200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 14.5,
+            "time" : 1793404800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 15,
+            "time" : 1793408400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 15.5,
+            "time" : 1793412000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 16,
+            "time" : 1793415600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 16.5,
+            "time" : 1793419200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 17,
+            "time" : 1793422800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 17.5,
+            "time" : 1793426400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : true,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 18,
+            "time" : 1793430000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 18.5,
+            "time" : 1793433600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 19,
+            "time" : 1793437200,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 19.5,
+            "time" : 1793440800,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 20,
+            "time" : 1793444400,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 20.5,
+            "time" : 1793448000,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 21,
+            "time" : 1793451600,
+            "weatherCode" : 3
+          },
+          {
+            "isDay" : false,
+            "precipitation" : 0,
+            "precipitationProbability" : 10,
+            "temperature" : 21.5,
+            "time" : 1793455200,
+            "weatherCode" : 3
+          }
+        ],
+        "locationID" : 1850147,
+        "timeZoneID" : "Asia/Tokyo",
+        "utcOffsetSeconds" : 32400
+      }
+    ],
+    "temperatureUnit" : "fahrenheit",
+    "windSpeedUnit" : "kilometersPerHour"
+  },
+  "schemaVersion" : 1
+}

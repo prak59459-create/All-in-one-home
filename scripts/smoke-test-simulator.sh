@@ -12,7 +12,9 @@
 #   app-weather : 天気の保存ファイル（通信はオフ、前回取得した天気。make-weather-fixture.py が今の時刻に合わせて作る）を置いて
 #             天気を開く。通信しないまま前回の天気が表示されるか、保存ファイルが読めたかを確かめる
 #   large-text / large-text-weather : 端末の文字の大きさを最大（アクセシビリティ XXXL）にして、ホーム画面と天気の画面を開く（崩れの確認）
-#   dark    : 端末をダークモードにしてホーム画面を開く
+#   dark    : 端末をダークモードにしてホーム画面を開く（外観を「端末に合わせる」にした保存ファイルで）
+#   settings-backup / settings-about : この iPad のバックアップ（make-backup-fixture.py が作る 2 つ）を置いて、設定の
+#             「バックアップと復元」と「このアプリについて」を開く（-MyHomeSettingsPage <ページ>）。開いても消えないかも確かめる
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
 # スクリーンショットを build-logs/smoke/ に保存する。実機 iPad / Swift Playgrounds での動作確認の代わりにはならない。
 set -euo pipefail
@@ -142,6 +144,18 @@ if xcrun simctl ui "$UDID" appearance dark; then
   xcrun simctl ui "$UDID" appearance light || true
 else
   echo "::warning::Simulator をダークモードにできなかった（dark は撮っていない）"
+fi
+
+# バックアップと復元・このアプリについて（Phase 9）。この iPad のバックアップの一覧に 2 つ（手動・復元の前）出るようにする。
+# 復元そのものは、ファイルを選ぶ操作ができないので Linux の単体テスト（BackupRestoreTests など）で確かめる
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+python3 "$ROOT/scripts/fixtures/make-backup-fixture.py" "$DATA_DIR/Backups" > /dev/null
+launch_case settings-backup -MyHomeSettingsPage backup
+launch_case settings-about -MyHomeSettingsPage about
+if [ "$(find "$DATA_DIR/Backups" -name 'myhome-*.json' | wc -l | tr -d ' ')" = "2" ]; then
+  record_check backup-files PASS "この iPad のバックアップを開いても消えていない（一覧の表示は settings-backup.png）"
+else
+  record_check backup-files FAIL "この iPad のバックアップの数が変わった"
 fi
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true

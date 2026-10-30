@@ -1,0 +1,19 @@
+import Foundation
+import XCTest
+@testable import MyHomeCore
+
+/// 移行テスト用: Phase 2（形式の版 1）のコードで保存ファイルを作る。
+final class FixtureGenTests: XCTestCase {
+    @MainActor
+    func testGenerate() async throws {
+        guard let out = ProcessInfo.processInfo.environment["FIXTURE_OUT"] else { return }
+        let store = HomeStore()
+        let link = HomeItem(id: "link.phase2", title: "Phase 2 のリンク", symbolName: "link", tint: RGBAColor(hex: 0x3366CC), action: .openURL("https://example.com/phase2"))
+        try store.add(link, toPage: 1)
+        try store.move(itemID: "link.swift", by: 1)
+        try store.remove(itemID: "link.wikipedia")
+        let saved = SavedHome(layout: store.layout, settings: SavedSettings(themeID: "forest", appearance: .dark))
+        let data: Data = try HomeArchiveCodec.encode(saved)
+        try data.write(to: URL(fileURLWithPath: out).appendingPathComponent("home-v1-phase2.json"))
+    }
+}

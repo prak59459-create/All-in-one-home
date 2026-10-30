@@ -35,6 +35,9 @@ protocol UpdateTransport: Sendable {
 /// GitHub からブランチ・ファイル一覧・ファイルを取得する。ファイルはコミットの SHA で取得し、
 /// git のブロブのハッシュが一覧と一致することを確かめる（途中で壊れた・違う版のファイルを書き込まない）。
 struct GitHubUpdateClient: Sendable {
+    /// 通信する相手（「このアプリについて」の通信の一覧にも出す）。
+    static let apiHost: String = "api.github.com"
+    static let rawHost: String = "raw.githubusercontent.com"
     static let maximumFileSize: Int = 2_000_000
     static let maximumFileCount: Int = 2_000
 
@@ -143,7 +146,7 @@ struct GitHubUpdateClient: Sendable {
     }
 
     private func apiURL(_ suffix: String) throws -> URL {
-        guard let url = URL(string: "https://api.github.com/repos/\(owner)/\(repository)/\(suffix)") else {
+        guard let url = URL(string: "https://\(GitHubUpdateClient.apiHost)/repos/\(owner)/\(repository)/\(suffix)") else {
             throw UpdateError.badResponse(0)
         }
         return url
@@ -152,7 +155,7 @@ struct GitHubUpdateClient: Sendable {
     private func rawURL(for path: String, commit: String) throws -> URL {
         let full: String = packagePath + "/" + path
         guard let encoded = full.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "https://raw.githubusercontent.com/\(owner)/\(repository)/\(commit)/\(encoded)") else {
+              let url = URL(string: "https://\(GitHubUpdateClient.rawHost)/\(owner)/\(repository)/\(commit)/\(encoded)") else {
             throw UpdateError.unsafePath(path)
         }
         return url

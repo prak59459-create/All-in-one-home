@@ -28,6 +28,8 @@ final class PersistenceController {
     @ObservationIgnored private var revision: Int = 0
     @ObservationIgnored private var savedRevision: Int = 0
     @ObservationIgnored private var snapshot: (@MainActor () -> SavedHome)?
+    /// 保存をやめたか（復元・消去でファイルを書き換える時）。やめた後は二度と保存しない。
+    @ObservationIgnored private(set) var isSuspended: Bool = false
 
     /// storage が nil なら保存しない。
     init(storage: (any HomeArchiveStorage)?, disabledReason: String = "", delay: Duration = .milliseconds(500)) {
@@ -59,7 +61,7 @@ final class PersistenceController {
 
     /// 変更があった時に呼ぶ。delay の間に続いた変更は、まとめて1回で保存する。
     func scheduleSave() {
-        guard writer != nil else { return }
+        guard writer != nil, !isSuspended else { return }
         revision += 1
         status = .pending
         scheduled?.cancel()
@@ -73,14 +75,23 @@ final class PersistenceController {
 
     /// 保存待ちの変更があればすぐ保存する（アプリが裏に回る時、やり直しの操作）。
     func flush() async {
-        guard writer != nil, revision != savedRevision else { return }
+        guard writer != nil, !isSuspended, revision != savedRevision else { return }
         scheduled?.cancel()
         scheduled = nil
         await save()
     }
 
+    /// 保存をやめる。復元・消去でファイルを書き換える前に、flush の後で呼ぶ（書き換えた後に、古い内容で上書きしないため）。
+    /// この後の変更は保存しない（この PersistenceController は、読み直した新しいものに置き換わる）。
+    func suspend(reason: String) {
+        isSuspended = true
+        scheduled?.cancel()
+        scheduled = nil
+        status = .disabled(reason)
+    }
+
     private func save() async {
-        guard let writer, let snapshot else { return }
+        guard let writer, let snapshot, !isSuspended else { return }
         let target: Int = revision
         let saved: SavedHome = snapshot()
         do {

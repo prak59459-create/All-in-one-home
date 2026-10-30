@@ -14,6 +14,8 @@ struct AppBootstrap {
     let miniApps: MiniAppLibrary
     /// 起動直後に表示する説明（保存データを読めなかった時など）。
     let startupNotice: String?
+    /// 保存先のフォルダ（Application Support/MyHome）。保存しない起動では nil（バックアップと復元もできない）。
+    let dataDirectory: URL?
 
     static func make(options: LaunchOptions) -> AppBootstrap {
         if let sample = options.sampleLayout() {
@@ -21,18 +23,25 @@ struct AppBootstrap {
             let reason: String = "検証用の起動引数（\(LaunchOptions.sampleItemsFlag)）で起動したため、変更は保存しません。"
             let saved = SavedHome(layout: sample, settings: .defaults)
             let miniApps = MiniAppLibrary(directory: nil, disabledReason: reason)
-            return assemble(saved: saved, storage: nil, images: nil, miniApps: miniApps, disabledReason: reason, notice: nil)
+            return assemble(saved: saved, storage: nil, images: nil, miniApps: miniApps, directory: nil, disabledReason: reason, notice: nil)
         }
         do {
             let storage: FileHomeArchiveStorage = try FileHomeArchiveStorage.standard()
-            let images = ImageFileStore(directory: storage.directory.appendingPathComponent("Images", isDirectory: true))
-            let miniApps = MiniAppLibrary(directory: storage.directory.appendingPathComponent("Apps", isDirectory: true))
-            return make(storage: storage, images: images, miniApps: miniApps)
+            return make(directory: storage.directory)
         } catch {
             let reason: String = "保存先のフォルダを用意できなかったため、変更は保存されません。"
             let miniApps = MiniAppLibrary(directory: nil, disabledReason: reason)
-            return assemble(saved: .initial(), storage: nil, images: nil, miniApps: miniApps, disabledReason: reason, notice: reason)
+            return assemble(saved: .initial(), storage: nil, images: nil, miniApps: miniApps, directory: nil, disabledReason: reason, notice: reason)
         }
+    }
+
+    /// 保存先のフォルダを指定して用意する（起動時、復元の後の読み直し、テスト）。
+    /// home.json・Images・Apps は、このフォルダの中に置く。
+    static func make(directory: URL, delay: Duration = .milliseconds(500)) -> AppBootstrap {
+        let storage = FileHomeArchiveStorage(directory: directory)
+        let images = ImageFileStore(directory: directory.appendingPathComponent("Images", isDirectory: true))
+        let miniApps = MiniAppLibrary(directory: directory.appendingPathComponent("Apps", isDirectory: true))
+        return make(storage: storage, images: images, miniApps: miniApps, directory: directory, delay: delay)
     }
 
     /// 保存先を指定して用意する（テストでも使う）。ミニアプリのデータは、ホーム画面の保存ファイルが読めなくても別に読み書きする。
@@ -40,6 +49,7 @@ struct AppBootstrap {
         storage: any HomeArchiveStorage,
         images: ImageFileStore? = nil,
         miniApps: MiniAppLibrary? = nil,
+        directory: URL? = nil,
         delay: Duration = .milliseconds(500)
     ) -> AppBootstrap {
         let outcome: LoadOutcome = HomeArchiveLoader.load(from: storage)
@@ -55,6 +65,7 @@ struct AppBootstrap {
             storage: usable,
             images: images,
             miniApps: library,
+            directory: outcome.canSave ? directory : nil,
             disabledReason: reason,
             notice: outcome.notice,
             delay: delay
@@ -66,6 +77,7 @@ struct AppBootstrap {
         storage: (any HomeArchiveStorage)?,
         images: ImageFileStore?,
         miniApps: MiniAppLibrary,
+        directory: URL?,
         disabledReason: String,
         notice: String?,
         delay: Duration = .milliseconds(500)
@@ -82,7 +94,13 @@ struct AppBootstrap {
             persistence: persistence,
             images: storage == nil ? nil : images,
             miniApps: miniApps,
-            startupNotice: notice
+            startupNotice: notice,
+            dataDirectory: storage == nil ? nil : directory
         )
+    }
+
+    /// 今の画面の状態（保存する内容）。
+    var currentSaved: SavedHome {
+        SavedHome(layout: home.layout, settings: settings.saved, timers: timers.board)
     }
 }

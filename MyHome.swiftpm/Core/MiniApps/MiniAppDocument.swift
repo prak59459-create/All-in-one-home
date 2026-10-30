@@ -22,6 +22,8 @@ final class MiniAppDocument<Content: MiniAppContent> {
     /// 変更のたびに増やす番号と、保存できた番号。2つが同じなら保存待ちの変更はない。
     @ObservationIgnored private var revision: Int = 0
     @ObservationIgnored private var savedRevision: Int = 0
+    /// 保存をやめたか（復元・消去でファイルを書き換える時）。やめた後は二度と保存しない。
+    @ObservationIgnored private(set) var isSuspended: Bool = false
 
     /// storage が nil なら保存しない（検証用の起動など）。
     init(storage: (any HomeArchiveStorage)?, disabledReason: String = "", delay: Duration = .milliseconds(500)) {
@@ -71,16 +73,26 @@ final class MiniAppDocument<Content: MiniAppContent> {
 
     /// 保存待ちの変更があればすぐ保存する（アプリが裏に回る時、アプリを終える時）。
     func flush() async {
-        guard writer != nil, revision != savedRevision else { return }
+        guard writer != nil, !isSuspended, revision != savedRevision else { return }
         scheduled?.cancel()
         scheduled = nil
         await save()
     }
 
+    /// 保存をやめる（PersistenceController.suspend と同じ）。読み込み中なら、読み込んだ後も保存しない。
+    func suspend(reason: String) {
+        isSuspended = true
+        scheduled?.cancel()
+        scheduled = nil
+        status = .disabled(reason)
+    }
+
     private func finishLoading(_ outcome: MiniAppLoadOutcome<Content>, storage: any HomeArchiveStorage) {
         content = outcome.content
         notice = outcome.notice
-        if outcome.canSave {
+        if isSuspended {
+            // 読み込み中に保存をやめた時は、書く手段を作らない（status は suspend で設定済み）
+        } else if outcome.canSave {
             writer = MiniAppArchiveWriter<Content>(storage: storage)
         } else {
             status = .disabled("読めなかったファイルを上書きしないよう、変更は保存しません。")
@@ -96,7 +108,7 @@ final class MiniAppDocument<Content: MiniAppContent> {
     }
 
     private func scheduleSave() {
-        guard writer != nil else { return }
+        guard writer != nil, !isSuspended else { return }
         revision += 1
         status = .pending
         scheduled?.cancel()
@@ -109,7 +121,7 @@ final class MiniAppDocument<Content: MiniAppContent> {
     }
 
     private func save() async {
-        guard let writer else { return }
+        guard let writer, !isSuspended else { return }
         let target: Int = revision
         let snapshot: Content = content
         do {
@@ -131,10 +143,11 @@ final class MiniAppDocument<Content: MiniAppContent> {
     }
 }
 
-/// アプリが裏に回る時に、開いたことのあるミニアプリをまとめて保存するための共通の窓口。
+/// アプリが裏に回る時に、開いたことのあるミニアプリをまとめて保存する（復元の前は保存をやめる）ための共通の窓口。
 @MainActor
 protocol MiniAppFlushing: AnyObject {
     func flush() async
+    func suspend(reason: String)
 }
 
 extension MiniAppDocument: MiniAppFlushing {}

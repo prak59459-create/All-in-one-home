@@ -1,0 +1,42 @@
+import Foundation
+import XCTest
+@testable import MyHomeCore
+
+/// 移行テスト用: Phase 5（ミニアプリの形式の版 1）のコードでミニアプリのデータを作る。
+final class FixtureGenTests: XCTestCase {
+    func testGenerate() throws {
+        guard let out = ProcessInfo.processInfo.environment["FIXTURE_OUT"] else { return }
+        let folder = URL(fileURLWithPath: out)
+        // 2026-10-29 12:00:00 UTC
+        let fixed = Date(timeIntervalSince1970: 1_793_275_200)
+
+        var notes: NoteBook = NoteBook.initial
+        let first: Note = try notes.addNote(id: "note.1", now: fixed)
+        notes.updateNote(id: first.id, title: "買い物", body: "牛乳\n卵", now: fixed)
+        let second: Note = try notes.addNote(id: "note.2", now: fixed.addingTimeInterval(60))
+        notes.updateNote(id: second.id, title: "", body: "タイトルのないメモ", now: fixed.addingTimeInterval(60))
+        notes.setPinned(id: first.id, true)
+        try MiniAppArchiveCodec.encode(notes).write(to: folder.appendingPathComponent("apps-v1-notes.json"))
+
+        var tasks: TodoList = TodoList.initial
+        _ = try tasks.add(title: "書類を出す", due: DayStamp(year: 2026, month: 11, day: 2), priority: .high, id: "task.1", now: fixed)
+        _ = try tasks.add(title: "傘を買う", due: nil, priority: .none, id: "task.2", now: fixed)
+        tasks.toggle(id: "task.2", now: fixed)
+        try MiniAppArchiveCodec.encode(tasks).write(to: folder.appendingPathComponent("apps-v1-tasks.json"))
+
+        var calculator: CalculatorState = CalculatorState.initial
+        calculator.tokens = [.number("12"), .operation(.multiply), .number("3")]
+        XCTAssertNil(calculator.evaluate(now: fixed, id: "calc.1"))
+        calculator.tokens = [.number("7"), .operation(.add)]
+        try MiniAppArchiveCodec.encode(calculator).write(to: folder.appendingPathComponent("apps-v1-calculator.json"))
+
+        var converter: ConverterState = ConverterState.initial
+        converter.selectCategory("temperature")
+        converter.setInput("36.5")
+        try MiniAppArchiveCodec.encode(converter).write(to: folder.appendingPathComponent("apps-v1-converter.json"))
+
+        var text: TextToolsState = TextToolsState.initial
+        _ = text.setText("全角ＡＢＣ　と　半角")
+        try MiniAppArchiveCodec.encode(text).write(to: folder.appendingPathComponent("apps-v1-texttools.json"))
+    }
+}

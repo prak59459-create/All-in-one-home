@@ -1,0 +1,19 @@
+{
+  "app" : "calculator",
+  "content" : {
+    "history" : [
+      {
+        "date" : 814968000,
+        "expression" : "12 × 3",
+        "id" : "calc.1",
+        "result" : "36"
+      }
+    ],
+    "lastResult" : "36",
+    "tokens" : [
+      "7",
+      "+"
+    ]
+  },
+  "schemaVersion" : 1
+}
