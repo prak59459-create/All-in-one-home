@@ -38,6 +38,9 @@ struct HomeItemButton: View {
     private var title: some View {
         Text(item.title)
             .font(.caption)
+            // 幅の決まった 1 行なので、iPad のホーム画面と同じく xxxLarge で止める（いちばん大きな文字では
+            // 「フ…」の 1 文字しか見えなかった。名前は VoiceOver では全部読み上げる）
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .foregroundStyle(palette.label.color)
             .lineLimit(1)
             .truncationMode(.tail)

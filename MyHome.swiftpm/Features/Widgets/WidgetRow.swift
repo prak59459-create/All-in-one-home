@@ -28,6 +28,9 @@ struct WidgetCard: View {
 
     var body: some View {
         WidgetContent(widget: widget)
+            // 大きさの決まったカードなので、文字は iPad のホーム画面のウィジェットと同じく xxxLarge で止める
+            // （Phase 8 の起動テストで、いちばん大きな文字では月の名前やメモが 1〜2 文字しか見えなかった）
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .padding(DesignTokens.Spacing.medium)
             .frame(width: width, height: DesignTokens.Widget.height)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))

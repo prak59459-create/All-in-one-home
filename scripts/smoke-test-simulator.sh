@@ -135,6 +135,9 @@ else
   echo "::warning::Simulator の文字の大きさを変えられなかった（large-text は撮っていない）"
 fi
 if xcrun simctl ui "$UDID" appearance dark; then
+  # home-folder.json は外観を「ライト」に固定しているので、「端末に合わせる」に変えた保存ファイルで開く
+  xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+  sed 's/"appearance": "light"/"appearance": "system"/' "$ROOT/scripts/fixtures/home-folder.json" > "$DATA_DIR/home.json"
   launch_case dark
   xcrun simctl ui "$UDID" appearance light || true
 else
