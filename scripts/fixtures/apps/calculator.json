@@ -1,0 +1,24 @@
+{
+  "app" : "calculator",
+  "content" : {
+    "history" : [
+      {
+        "date" : 815000000,
+        "expression" : "0.1 + 0.2",
+        "id" : "calc.fixture.1",
+        "result" : "0.3"
+      }
+    ],
+    "lastResult" : "0.3",
+    "tokens" : [
+      "12",
+      "+",
+      "(",
+      "3.5",
+      "×",
+      "2",
+      ")"
+    ]
+  },
+  "schemaVersion" : 1
+}

@@ -1,0 +1,39 @@
+{
+  "app" : "tasks",
+  "content" : {
+    "items" : [
+      {
+        "createdAt" : 815000000,
+        "due" : "2020-01-01",
+        "id" : "task.fixture.overdue",
+        "isDone" : false,
+        "priority" : 3,
+        "title" : "期限切れのタスク（確認用）"
+      },
+      {
+        "createdAt" : 815000000,
+        "due" : "2099-12-31",
+        "id" : "task.fixture.later",
+        "isDone" : false,
+        "priority" : 2,
+        "title" : "ずっと先のタスク"
+      },
+      {
+        "createdAt" : 815000000,
+        "id" : "task.fixture.someday",
+        "isDone" : false,
+        "priority" : 0,
+        "title" : "期限なしのタスク"
+      },
+      {
+        "completedAt" : 815000500,
+        "createdAt" : 815000000,
+        "id" : "task.fixture.done",
+        "isDone" : true,
+        "priority" : 1,
+        "title" : "完了したタスク"
+      }
+    ]
+  },
+  "schemaVersion" : 1
+}

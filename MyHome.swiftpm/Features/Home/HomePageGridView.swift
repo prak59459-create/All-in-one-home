@@ -1,0 +1,98 @@
+import SwiftUI
+
+/// 1ページ分のアイコングリッド（F0001、F0901）。使える幅から列数を決め（F0005、F0006）、
+/// 項目が多い時は縦にスクロールして表示が破綻しないようにする。
+@MainActor
+struct HomePageGridView: View {
+    let page: HomePage
+    let pageIndex: Int
+    @Environment(HomeStore.self) private var store
+    @Environment(AppRouter.self) private var router
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView(.vertical) {
+                pageContent(width: proxy.size.width)
+                    .frame(minHeight: proxy.size.height, alignment: .top)
+                    .contentShape(Rectangle())
+                    // 項目の上以外に落とした時はこのページの末尾へ
+                    .dropDestination(for: String.self) { droppedIDs, _ in
+                        moveDropped(droppedIDs)
+                    }
+            }
+        }
+    }
+
+    private func moveDropped(_ droppedIDs: [String]) -> Bool {
+        guard let movingID = droppedIDs.first else { return false }
+        return DropMover.perform(store: store, router: router) { store in
+            try store.move(itemID: movingID, to: .page(pageIndex))
+        }
+    }
+
+    @ViewBuilder
+    private func pageContent(width: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            if !page.widgets.isEmpty {
+                WidgetRow(widgets: page.widgets)
+            }
+            itemsContent(width: width)
+        }
+    }
+
+    @ViewBuilder
+    private func itemsContent(width: CGFloat) -> some View {
+        if page.items.isEmpty && page.widgets.isEmpty {
+            EmptyPageView(pageIndex: pageIndex)
+                .frame(width: width)
+                .padding(.top, DesignTokens.Spacing.xLarge)
+        } else if !page.items.isEmpty {
+            LazyVGrid(columns: columns(for: width), spacing: DesignTokens.Grid.rowSpacing) {
+                ForEach(page.items) { item in
+                    HomeItemButton(item: item)
+                }
+            }
+            .padding(.horizontal, DesignTokens.Grid.horizontalPadding)
+            .padding(.vertical, DesignTokens.Grid.verticalPadding)
+        }
+    }
+
+    private func columns(for width: CGFloat) -> [GridItem] {
+        let padding: CGFloat = DesignTokens.Grid.horizontalPadding * 2
+        let available: Double = Double(width - padding)
+        let metrics: GridMetrics = .standard
+        let count: Int = metrics.columnCount(forWidth: available)
+        let item = GridItem(.flexible(), spacing: CGFloat(metrics.spacing), alignment: .top)
+        return Array(repeating: item, count: count)
+    }
+}
+
+/// 項目がないページの説明と、追加の入口（F0988、F0041）。
+@MainActor
+struct EmptyPageView: View {
+    let pageIndex: Int
+    @Environment(\.homePalette) private var palette
+    @Environment(AppRouter.self) private var router
+
+    var body: some View {
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            VStack(spacing: DesignTokens.Spacing.small) {
+                Image(systemName: "square.dashed")
+                    .font(.largeTitle)
+                    .accessibilityHidden(true)
+                Text("このページには項目がありません")
+                    .font(.headline)
+            }
+            .foregroundStyle(palette.label.color)
+            .accessibilityElement(children: .combine)
+            Button {
+                router.beginEditing()
+                router.presentAddItem(pageIndex: pageIndex)
+            } label: {
+                Label("項目を追加", systemImage: "plus")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .multilineTextAlignment(.center)
+    }
+}

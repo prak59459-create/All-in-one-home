@@ -1,0 +1,80 @@
+name: Core ML Qwen
+
+# 追加フェーズ A: Qwen2.5-0.5B-Instruct を Core ML に変換し、macOS の Core ML で動かして確かめる（Linux では予測できない）。
+# 1. PyTorch で書き直したモデルが transformers と同じ答えになるか
+# 2. Core ML（float16・重みは層と出力が 8bit、埋め込みが 4bit）に変換し、Python（coremltools）で予測して正解と比べる
+# 3. アプリと同じ Swift のエンジン（MyHome.swiftpm/Core/AI/Qwen）で答えさせる
+# 4. リポジトリの models/ にモデルがあれば、アプリが取得するそのファイルでも 2・3 を行い、一覧（QwenModelManifest+Files.swift）と合うか確かめる
+# 変換したモデルはアーティファクトに残す（models/ に置く時は、確かめたこのファイルを使う）。
+
+on:
+  pull_request:
+    paths:
+      - "scripts/coreml/**"
+      - "MyHome.swiftpm/Core/AI/Qwen/**"
+      - "Tests/MyHomeCoreTests/Qwen*"
+      - "models/**"
+      - ".github/workflows/coreml-qwen.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: coreml-qwen-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  convert-and-check:
+    name: Qwen / Core ML / macOS
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python の準備
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "torch==2.7.1" "coremltools==9.0" "transformers==4.46.3" safetensors numpy "huggingface_hub<1.0"
+          python -c "import torch, coremltools, transformers; print('torch', torch.__version__, 'coremltools', coremltools.__version__, 'transformers', transformers.__version__)"
+      - name: Qwen2.5-0.5B-Instruct を取得（Hugging Face、Apache 2.0）
+        run: python -c "from huggingface_hub import snapshot_download; snapshot_download('Qwen/Qwen2.5-0.5B-Instruct', local_dir='build/qwen')"
+      - name: PyTorch の書き直しを transformers と照合
+        run: python scripts/coreml/convert_qwen.py verify build/qwen
+      - name: Core ML に変換（9 つ）
+        run: python scripts/coreml/convert_qwen.py convert build/qwen build/coreml
+      - name: Core ML で予測して正解と比べる（Python）
+        run: python scripts/coreml/check_coreml.py build/qwen build/coreml
+      - name: 大きさと git のハッシュ（models/ に置く時の確認用）
+        run: |
+          xcodebuild -version
+          find build/coreml -type f | sort | while read -r file; do
+            printf '%s %s %s\n' "$(git hash-object "$file")" "$(stat -f %z "$file")" "${file#build/coreml/}"
+          done | tee build/coreml-files.txt
+      - name: アプリと同じ Swift のエンジンで答えさせる
+        env:
+          QWEN_COREML_DIR: ${{ github.workspace }}/build/coreml
+        run: swift test --filter QwenCoreMLEngineTests
+      - name: リポジトリの models/ のモデル（アプリが取得するもの）を確かめる
+        env:
+          QWEN_COREML_DIR: ${{ github.workspace }}/models/qwen2.5-0.5b-instruct-coreml
+        run: |
+          if [ ! -d "$QWEN_COREML_DIR/QwenEmbedding.mlpackage" ]; then
+            echo "models/ にはまだモデルがない（トークナイザーだけ）"
+            exit 0
+          fi
+          python scripts/coreml/make_manifest.py --check "$QWEN_COREML_DIR" "MyHome.swiftpm/Core/AI/Qwen/QwenModelManifest+Files.swift"
+          python scripts/coreml/check_coreml.py build/qwen "$QWEN_COREML_DIR"
+          swift test --filter QwenCoreMLEngineTests
+      - name: 変換したモデルを保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen-coreml
+          path: |
+            build/coreml
+            build/coreml-files.txt
+          retention-days: 7
+          if-no-files-found: warn

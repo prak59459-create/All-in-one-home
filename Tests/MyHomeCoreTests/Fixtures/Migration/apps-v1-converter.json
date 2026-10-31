@@ -1,0 +1,9 @@
+{
+  "app" : "converter",
+  "content" : {
+    "categoryID" : "temperature",
+    "input" : "36.5",
+    "sourceUnitID" : "temperature.c"
+  },
+  "schemaVersion" : 1
+}

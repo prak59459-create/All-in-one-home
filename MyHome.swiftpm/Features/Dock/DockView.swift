@@ -1,0 +1,78 @@
+import SwiftUI
+
+/// 画面下の Dock（F0081）。半透明の素材で壁紙とのコントラストを保つ（F0653）。
+/// 狭いウィンドウでは小さいアイコンに切り替え、それでも入らなければ横スクロールにする（F0117、F0118）。
+@MainActor
+struct DockView: View {
+    let items: [HomeItem]
+
+    var body: some View {
+        if !items.isEmpty {
+            // 間隔と余白は、IconTile が四方に持つ Icon.badgeInset（7pt）を差し引いた値
+            ViewThatFits(in: .horizontal) {
+                DockRow(items: items, iconSize: DesignTokens.Icon.dockSize, spacing: DesignTokens.Spacing.small)
+                DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: 0)
+                ScrollView(.horizontal) {
+                    DockRow(items: items, iconSize: DesignTokens.Icon.compactDockSize, spacing: 0)
+                }
+            }
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+        }
+    }
+}
+
+@MainActor
+struct DockRow: View {
+    let items: [HomeItem]
+    let iconSize: CGFloat
+    let spacing: CGFloat
+    @Environment(HomeStore.self) private var store
+    @Environment(AppRouter.self) private var router
+
+    var body: some View {
+        HStack(spacing: spacing) {
+            ForEach(items) { item in
+                DockItemButton(item: item, iconSize: iconSize)
+            }
+        }
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.Spacing.small)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
+        // 項目の上以外に落とした時は Dock の末尾へ（F0083、F0100）
+        .dropDestination(for: String.self) { droppedIDs, _ in
+            moveDropped(droppedIDs)
+        }
+    }
+
+    private func moveDropped(_ droppedIDs: [String]) -> Bool {
+        guard let movingID = droppedIDs.first else { return false }
+        return DropMover.perform(store: store, router: router) { store in
+            try store.move(itemID: movingID, to: .dock)
+        }
+    }
+}
+
+/// Dock の1項目。名前は表示せず、読み上げで伝える。編集中は Dock の中で並べ替えと削除ができる。
+@MainActor
+struct DockItemButton: View {
+    let item: HomeItem
+    let iconSize: CGFloat
+    @Environment(AppRouter.self) private var router
+
+    var body: some View {
+        if router.isEditing {
+            EditableIconTile(item: item, size: iconSize)
+                .modifier(EditingItemModifier(item: item, iconSize: iconSize))
+        } else {
+            Button {
+                router.launch(item)
+            } label: {
+                EditableIconTile(item: item, size: iconSize)
+            }
+            .buttonStyle(IconPressStyle())
+            .modifier(ItemContextMenuModifier(item: item))
+            .accessibilityLabel(item.title)
+            .accessibilityHint(item.accessibilityHint)
+        }
+    }
+}

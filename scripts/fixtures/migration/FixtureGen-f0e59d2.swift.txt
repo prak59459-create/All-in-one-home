@@ -1,0 +1,28 @@
+import Foundation
+import XCTest
+@testable import MyHomeCore
+
+/// 移行テスト用: Phase 4（形式の版 3。ウィジェット・画像・壁紙・タイマー）のコードで保存ファイルを作る。
+final class FixtureGenTests: XCTestCase {
+    @MainActor
+    func testGenerate() async throws {
+        guard let out = ProcessInfo.processInfo.environment["FIXTURE_OUT"] else { return }
+        let store = HomeStore()
+        try store.addWidget(HomeWidget(id: "widget.clock", kind: .clock(ClockWidgetStyle(isAnalog: true, showsSeconds: true)), size: .medium), toPage: 0)
+        try store.addWidget(HomeWidget(id: "widget.note", kind: .note("Phase 4 のメモ"), size: .small), toPage: 0)
+        try store.update(itemID: "link.swift", title: "Swift", symbolName: "swift", tint: RGBAColor(hex: 0xF05138), imageName: "icon-0f8c2b7e.jpg")
+        try store.makeFolder(containing: "link.github", folderID: "folder.phase4")
+        // 2026-10-29 12:00:00 UTC
+        let fixed = Date(timeIntervalSince1970: 1_793_275_200)
+        let timers = TimerStore(board: .initial(), clock: { fixed })
+        try timers.addCountdown(label: "お茶", duration: 240)
+        timers.start(id: "timer.3min")
+        timers.startStopwatch()
+        timers.lapStopwatch()
+        let wallpaper = WallpaperSetting.image(WallpaperImage(fileName: "wallpaper-5d1e9a40.jpg", blur: 0.3, dim: 0.4))
+        let settings = SavedSettings(themeID: "mono", appearance: .system, wallpaper: wallpaper, showsSeconds: true)
+        let saved = SavedHome(layout: store.layout, settings: settings, timers: timers.board)
+        let data: Data = try HomeArchiveCodec.encode(saved)
+        try data.write(to: URL(fileURLWithPath: out).appendingPathComponent("home-v3-phase4.json"))
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "app" : "texttools",
+  "content" : {
+    "text" : "{\"name\":\"MyHome\",\"phase\":5}\n文字数を数える確認用の文章です。👍🏽"
+  },
+  "schemaVersion" : 1
+}
