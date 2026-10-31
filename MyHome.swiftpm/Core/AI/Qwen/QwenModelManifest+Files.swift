@@ -1,0 +1,35 @@
+// このファイルは scripts/coreml/make_manifest.py で作る（手で書き換えない）。
+// models/qwen2.5-0.5b-instruct-coreml の中身を変えたら、作り直してから一緒にコミットする。
+extension QwenModelManifest {
+    static let files: [QwenModelFile] = [
+        QwenModelFile(path: "QwenEmbedding.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 2639, blob: "456aced029d503fcc58d52c4f7382917a20e0573"),
+        QwenModelFile(path: "QwenEmbedding.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 76575936, blob: "c7837e31cb342f0a7ea6a9a853566080650d03d9"),
+        QwenModelFile(path: "QwenEmbedding.mlpackage/Manifest.json", size: 617, blob: "ad387c52770f4827c08861a1214a1ad300e2dfba"),
+        QwenModelFile(path: "QwenHead0.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 3724, blob: "20ba865218845d9f32617c517af35898e49da922"),
+        QwenModelFile(path: "QwenHead0.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 72475584, blob: "ab0fc6ac4c066f41ed5f38c7c193fd1cc42f89f8"),
+        QwenModelFile(path: "QwenHead0.mlpackage/Manifest.json", size: 617, blob: "eca769492f1a8dc6ffbe75dead85215fcbe83122"),
+        QwenModelFile(path: "QwenHead1.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 3729, blob: "410be91f0570ebbe46176d0f7aeec69a33824ce2"),
+        QwenModelFile(path: "QwenHead1.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 72475584, blob: "aef1ecd1797d95f6a27f7a1e4743512746bff44a"),
+        QwenModelFile(path: "QwenHead1.mlpackage/Manifest.json", size: 617, blob: "c8f9176451efb40d2b2da064a23d789ce42465dd"),
+        QwenModelFile(path: "QwenLayers0.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113610, blob: "e0224826aa4ca9c12b0937e08df92a6d013d7aa5"),
+        QwenModelFile(path: "QwenLayers0.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "e058bfcb423597c8c2e1a3026ae10e3ca4447dab"),
+        QwenModelFile(path: "QwenLayers0.mlpackage/Manifest.json", size: 617, blob: "b72cb79a6b170928289293626358359251ff7336"),
+        QwenModelFile(path: "QwenLayers1.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113610, blob: "45563fbc9247e00d82619f51781191f2f8b859a6"),
+        QwenModelFile(path: "QwenLayers1.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "bfecf9b42eb3dbc6e8d869bf9d08d32b905c08f0"),
+        QwenModelFile(path: "QwenLayers1.mlpackage/Manifest.json", size: 617, blob: "b9375d341a10605c231ca86e0b0bdde732cd1115"),
+        QwenModelFile(path: "QwenLayers2.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113611, blob: "08e4be5ff778bb9499b315823bead1472119197d"),
+        QwenModelFile(path: "QwenLayers2.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "2f7373bb07229155a3f5cba80e728c12cb5fdda5"),
+        QwenModelFile(path: "QwenLayers2.mlpackage/Manifest.json", size: 617, blob: "6a2b65774e4586a98b8acc6ce07ad2b6fa425694"),
+        QwenModelFile(path: "QwenLayers3.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113612, blob: "fc65cbc7cefaf3afaa270e54a41e670ee59c5c27"),
+        QwenModelFile(path: "QwenLayers3.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "212e9d9deaad01f6bf965e0e104d9f16fc88bc7f"),
+        QwenModelFile(path: "QwenLayers3.mlpackage/Manifest.json", size: 617, blob: "7c3ac972f618e9974d2bfcd7e455c459a2ba6b7d"),
+        QwenModelFile(path: "QwenLayers4.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113612, blob: "2b04028f45c29cf9c0e75aaa03a673e1cf7ebdf5"),
+        QwenModelFile(path: "QwenLayers4.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "80e83ba90b07e5f45e235459810b36e984f1253e"),
+        QwenModelFile(path: "QwenLayers4.mlpackage/Manifest.json", size: 617, blob: "9ef3d86643b929a214f123c0215f87bdf49d8149"),
+        QwenModelFile(path: "QwenLayers5.mlpackage/Data/com.apple.CoreML/model.mlmodel", size: 113612, blob: "a3923e2e2e2493376025721ea7af824b97f19b39"),
+        QwenModelFile(path: "QwenLayers5.mlpackage/Data/com.apple.CoreML/weights/weight.bin", size: 63684032, blob: "1827ee94b0121785114e2fa921d540500d1bca7c"),
+        QwenModelFile(path: "QwenLayers5.mlpackage/Manifest.json", size: 617, blob: "ea4be5d37cda0df1798f676de200f6e57658419b"),
+        QwenModelFile(path: "merges.txt", size: 1671839, blob: "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"),
+        QwenModelFile(path: "vocab.json", size: 2776833, blob: "4783fe10ac3adce15ac8f358ef5462739852c569"),
+    ]
+}

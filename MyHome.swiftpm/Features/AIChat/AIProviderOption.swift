@@ -11,8 +11,22 @@ struct AIProviderOption: Identifiable {
     /// 使えるものを先に並べる。端末内モデルが使えればそれを既定にする。
     @MainActor
     static func all() -> [AIProviderOption] {
-        let options: [AIProviderOption] = [systemModel(), stub()]
+        let options: [AIProviderOption] = [systemModel(), qwen(), stub()]
         return options
+    }
+
+    /// Core ML の Qwen2.5 0.5B（追加フェーズ A）。モデルは AI の画面から 1 回だけ取得して入れる。
+    static let qwenID: String = "qwen2.5-0.5b-coreml"
+
+    @MainActor
+    private static func qwen() -> AIProviderOption {
+        AIProviderOption(
+            descriptor: LLMModelDescriptor(id: qwenID, displayName: QwenModelSupport.displayName, format: .coreML),
+            availability: QwenModelSupport.availability(),
+            detail: "Alibaba Cloud の小さなモデル（Apache 2.0）を、この iPad の中の Core ML で動かします。入力した文章は端末の外に送りません。"
+                + "小さいので、まちがえることも多いです。iPadOS 18 以降。",
+            makeProvider: { () -> (any LocalLLMProvider)? in QwenModelSupport.makeProvider() }
+        )
     }
 
     @MainActor

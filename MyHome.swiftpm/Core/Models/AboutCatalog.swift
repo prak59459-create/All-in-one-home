@@ -60,6 +60,7 @@ enum AboutCatalog {
     private static func network() -> AboutSection {
         let weather: String = weatherHosts.joined(separator: "、")
         let update: String = updateHosts.joined(separator: "、")
+        let modelSize: String = BackupFormat.size(QwenModelManifest.totalSize)
         let items: [AboutItem] = [
             AboutItem(
                 id: "weather",
@@ -71,8 +72,13 @@ enum AboutCatalog {
                 title: "ソフトウェアアップデート（GitHub）",
                 detail: "設定 → ソフトウェアアップデート で確かめる・書き込む時だけ、\(update) からファイルを受け取ります。"
             ),
+            AboutItem(
+                id: "ai-model",
+                title: "AI のモデル（Qwen2.5 0.5B）",
+                detail: "AI の画面で「モデルを入れる」を押した時だけ、\(update) から、このアプリのリポジトリのモデルのファイル（約 \(modelSize)）を受け取ります。"
+            ),
             AboutItem(id: "links", title: "リンク", detail: "ホーム画面のリンクは、開く前に確認してから Safari などで開きます。"),
-            AboutItem(id: "ai", title: "AI", detail: "Apple の端末内のモデルを使います。会話はどこにも送らず、保存もしません。")
+            AboutItem(id: "ai", title: "AI", detail: "Apple の端末内のモデルか、この iPad に入れた Qwen を、iPad の中で動かします。会話はどこにも送らず、保存もしません。")
         ]
         return AboutSection(
             id: "network",
@@ -132,9 +138,16 @@ enum AboutCatalog {
                 link: "https://creativecommons.org/licenses/by/4.0/"
             ),
             AboutItem(
+                id: "qwen",
+                title: "AI のモデル（Qwen2.5-0.5B-Instruct）",
+                detail: "Alibaba Cloud（Apache License 2.0）。Core ML で動かすために変換し、重みを 8bit（単語の表は 4bit）にしています。",
+                linkTitle: "Apache License 2.0",
+                link: "https://www.apache.org/licenses/LICENSE-2.0"
+            ),
+            AboutItem(
                 id: "libraries",
                 title: "使っているライブラリ",
-                detail: "Apple の SDK（SwiftUI・Foundation Models など）と SF Symbols だけです。外部のライブラリやパッケージは使っていません。"
+                detail: "Apple の SDK（SwiftUI・Core ML・Foundation Models など）と SF Symbols だけです。外部のライブラリやパッケージは使っていません。"
             )
         ]
         return AboutSection(

@@ -4,13 +4,13 @@ import Accelerate
 import CoreML
 import Foundation
 
-/// Core ML に変換した Qwen2.5-0.5B-Instruct を動かす（追加フェーズ A）。モデルは 5 つ（埋め込み・層 8 個ずつ × 3・出力）で、
-/// 層の KV キャッシュは Core ML の状態（MLState）に持つ。そのため iOS 18 / macOS 15 以降でだけ使える。
+/// Core ML に変換した Qwen2.5-0.5B-Instruct を動かす（追加フェーズ A）。モデルは 9 つ（埋め込み・層 4 つずつ × 6・
+/// 出力を語彙の前半と後半の 2 つ）で、層の KV キャッシュは Core ML の状態（MLState）に持つ。そのため iOS 18 / macOS 15 以降でだけ使える。
 /// 変換は scripts/coreml/convert_qwen.py。入出力の名前と形はそこで決めている。
 /// 1 つの生成が終わるまで次の feed を呼ばない（QwenCoreMLSession が順番を守る）。
 @available(iOS 18.0, macOS 15.0, *)
 final class QwenCoreMLEngine: @unchecked Sendable {
-    static let names: [String] = ["QwenEmbedding", "QwenLayers0", "QwenLayers1", "QwenLayers2", "QwenHead"]
+    static let names: [String] = QwenModelManifest.packages
     static let maximumContext: Int = 2048
     static let maximumQuery: Int = 512
     /// float16 の -10000（見てはいけない位置の値。scripts/coreml の causal_mask と同じ）。
@@ -18,7 +18,8 @@ final class QwenCoreMLEngine: @unchecked Sendable {
 
     private let embedding: MLModel
     private let layers: [MLModel]
-    private let head: MLModel
+    /// 出力（語彙を分けたもの。順につなぐと 151,936 個の logits になる）。
+    private let heads: [MLModel]
     private var states: [MLState]
     /// KV キャッシュに入っているトークンの数。
     private(set) var length: Int = 0
@@ -27,14 +28,13 @@ final class QwenCoreMLEngine: @unchecked Sendable {
     init(compiledDirectory: URL, computeUnits: MLComputeUnits = .cpuAndGPU) throws {
         let configuration = MLModelConfiguration()
         configuration.computeUnits = computeUnits
-        var models: [MLModel] = []
-        for name in QwenCoreMLEngine.names {
+        func load(_ name: String) throws -> MLModel {
             let url: URL = compiledDirectory.appendingPathComponent(name + ".mlmodelc", isDirectory: true)
-            models.append(try MLModel(contentsOf: url, configuration: configuration))
+            return try MLModel(contentsOf: url, configuration: configuration)
         }
-        embedding = models[0]
-        layers = Array(models[1...3])
-        head = models[4]
+        embedding = try load(QwenModelManifest.embeddingPackage)
+        layers = try QwenModelManifest.layerPackages.map(load)
+        heads = try QwenModelManifest.headPackages.map(load)
         states = layers.map { (model: MLModel) -> MLState in model.makeState() }
     }
 
@@ -71,8 +71,13 @@ final class QwenCoreMLEngine: @unchecked Sendable {
             hidden = try output(of: model, inputs: inputs, name: "output_hidden", state: state)
         }
         length += tokens.count
-        let logits: MLMultiArray = try output(of: head, inputs: ["hidden": hidden], name: "logits", state: nil)
-        return QwenCoreMLEngine.floats(logits)
+        var logits: [Float] = []
+        logits.reserveCapacity(151_936)
+        for head in heads {
+            let part: MLMultiArray = try output(of: head, inputs: ["hidden": hidden], name: "logits", state: nil)
+            logits.append(contentsOf: QwenCoreMLEngine.floats(part))
+        }
+        return logits
     }
 
     private func output(of model: MLModel, inputs: [String: MLMultiArray], name: String, state: MLState?) throws -> MLMultiArray {

@@ -4,8 +4,8 @@
 使い方: python scripts/coreml/check_coreml.py <Qwen2.5 のモデルのフォルダ> <変換した .mlpackage のフォルダ>
 
 1. 同じ質問で、transformers（float32）の貪欲な生成を正解として作る
-2. Core ML（float16・重みは 4bit）に、質問と正解のトークンを順に入れ、各位置で一番高いトークンが正解と同じかを数える
-   （4bit にした分のずれを測る。80% 以上で合格）
+2. Core ML（float16・重みは 8bit。埋め込みは 4bit）に、質問と正解のトークンを順に入れ、各位置で一番高いトークンが正解と同じかを数える
+   （量子化した分のずれを測る。PyTorch で同じ量子化を再現すると 93%。85% 以上で合格）
 3. Core ML だけで貪欲に生成し、答えの文を表示する（「東京」が入っていれば合格）
 """
 import os
@@ -17,9 +17,11 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-NAMES = ["QwenEmbedding", "QwenLayers0", "QwenLayers1", "QwenLayers2", "QwenHead"]
+LAYERS = [f"QwenLayers{number}" for number in range(6)]
+HEADS = ["QwenHead0", "QwenHead1"]
+NAMES = ["QwenEmbedding"] + LAYERS + HEADS
 PROMPT = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n日本の首都はどこですか？<|im_end|>\n<|im_start|>assistant\n"
-STEPS = 16
+STEPS = 32
 MASKED = np.float16(-1e4)
 
 
@@ -40,11 +42,13 @@ class CoreMLQwen:
         self.reset()
 
     def reset(self):
-        self.states = [model.make_state() for model in self.models[1:4]]
+        self.states = [model.make_state() for model in self.models[1 : 1 + len(LAYERS)]]
         self.length = 0
 
     def feed(self, ids):
-        embed, layers, head = self.models[0], self.models[1:4], self.models[4]
+        embed = self.models[0]
+        layers = self.models[1 : 1 + len(LAYERS)]
+        heads = self.models[1 + len(LAYERS) :]
         count = len(ids)
         hidden = embed.predict({"input_ids": np.array([ids], dtype=np.int32)})["hidden"]
         positions = np.arange(self.length, self.length + count, dtype=np.int32)
@@ -52,8 +56,8 @@ class CoreMLQwen:
         for model, state in zip(layers, self.states):
             hidden = model.predict({"hidden": hidden, "position_ids": positions, "causal_mask": causal}, state=state)["output_hidden"]
         self.length += count
-        logits = head.predict({"hidden": hidden})["logits"]
-        return np.asarray(logits, dtype=np.float32).reshape(-1)
+        parts = [np.asarray(head.predict({"hidden": hidden})["logits"], dtype=np.float32).reshape(-1) for head in heads]
+        return np.concatenate(parts)
 
 
 def main():
@@ -95,7 +99,7 @@ def main():
     print(f"Core ML の生成: {text!r}（{len(generated)} トークン、{len(generated) / max(elapsed, 1e-6):.1f} トークン/秒）")
     if not np.isfinite(logits).all():
         raise SystemExit("logits に NaN / inf がある")
-    if rate < 0.8:
+    if rate < 0.85:
         raise SystemExit(f"正解との一致が少ない（{rate:.0%}）")
     if "東京" not in text:
         raise SystemExit("答えに「東京」がない")

@@ -14,6 +14,11 @@ struct AIModelPanel: View {
                 modelPicker
                 if let option = selectedOption {
                     AIModelDescription(option: option)
+                    if needsQwenInstall(option) {
+                        QwenModelInstallView {
+                            refreshOptions()
+                        }
+                    }
                 }
                 UnavailableModelNotes(options: options, selectedID: selectedID)
             } else {
@@ -57,6 +62,11 @@ struct AIModelPanel: View {
         case .notLoaded:
             return ""
         }
+    }
+
+    /// Qwen を選んでいて、この端末では動かせるが、まだモデルを入れていない時。
+    private func needsQwenInstall(_ option: AIProviderOption) -> Bool {
+        option.id == AIProviderOption.qwenID && QwenModelSupport.unsupportedReason == nil && !QwenModelSupport.isInstalled
     }
 
     /// 開くたびに調べ直す（Apple Intelligence をオンにした後など）。使えるものがあればそれを選ぶ。

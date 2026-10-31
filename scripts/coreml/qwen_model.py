@@ -170,14 +170,16 @@ class LayerChunk(nn.Module):
 
 
 class Head(nn.Module):
-    """hidden (1, Q, H) → 最後の位置の logits (1, 1, vocab)。"""
+    """hidden (1, Q, H) → 最後の位置の、語彙 [start, end) の logits (1, 1, end - start)。
+    8bit の出力は 1 ファイル 100MB を超えるので、語彙を 2 つに分けて別のモデルにする（Swift の側でつなぐ）。"""
 
-    def __init__(self, cfg, w):
+    def __init__(self, cfg, w, start=0, end=None):
         super().__init__()
+        end = cfg.vocab if end is None else end
         self.norm = RMSNorm(w["model.norm.weight"], cfg.eps)
-        self.lm_head = nn.Linear(cfg.hidden, cfg.vocab, bias=False)
+        self.lm_head = nn.Linear(cfg.hidden, end - start, bias=False)
         name = "model.embed_tokens.weight" if cfg.tied else "lm_head.weight"
-        self.lm_head.weight.data = w[name].clone()
+        self.lm_head.weight.data = w[name][start:end].clone()
 
     def forward(self, hidden):
         last = hidden[:, -1:, :]

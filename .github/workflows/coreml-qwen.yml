@@ -2,9 +2,10 @@ name: Core ML Qwen
 
 # 追加フェーズ A: Qwen2.5-0.5B-Instruct を Core ML に変換し、macOS の Core ML で動かして確かめる（Linux では予測できない）。
 # 1. PyTorch で書き直したモデルが transformers と同じ答えになるか
-# 2. Core ML（float16・重みは 4bit）に変換し、Python（coremltools）で予測して正解と比べる
+# 2. Core ML（float16・重みは層と出力が 8bit、埋め込みが 4bit）に変換し、Python（coremltools）で予測して正解と比べる
 # 3. アプリと同じ Swift のエンジン（MyHome.swiftpm/Core/AI/Qwen）で答えさせる
-# 変換したモデルはアーティファクトに残す（リポジトリの models/ に置くものと同じ）。
+# 4. リポジトリの models/ にモデルがあれば、アプリが取得するそのファイルでも 2・3 を行い、一覧（QwenModelManifest+Files.swift）と合うか確かめる
+# 変換したモデルはアーティファクトに残す（models/ に置く時は、確かめたこのファイルを使う）。
 
 on:
   pull_request:
@@ -12,6 +13,7 @@ on:
       - "scripts/coreml/**"
       - "MyHome.swiftpm/Core/AI/Qwen/**"
       - "Tests/MyHomeCoreTests/Qwen*"
+      - "models/**"
       - ".github/workflows/coreml-qwen.yml"
   workflow_dispatch:
 
@@ -41,7 +43,7 @@ jobs:
         run: python -c "from huggingface_hub import snapshot_download; snapshot_download('Qwen/Qwen2.5-0.5B-Instruct', local_dir='build/qwen')"
       - name: PyTorch の書き直しを transformers と照合
         run: python scripts/coreml/convert_qwen.py verify build/qwen
-      - name: Core ML に変換（5 つ。4bit）
+      - name: Core ML に変換（9 つ）
         run: python scripts/coreml/convert_qwen.py convert build/qwen build/coreml
       - name: Core ML で予測して正解と比べる（Python）
         run: python scripts/coreml/check_coreml.py build/qwen build/coreml
@@ -55,6 +57,17 @@ jobs:
         env:
           QWEN_COREML_DIR: ${{ github.workspace }}/build/coreml
         run: swift test --filter QwenCoreMLEngineTests
+      - name: リポジトリの models/ のモデル（アプリが取得するもの）を確かめる
+        env:
+          QWEN_COREML_DIR: ${{ github.workspace }}/models/qwen2.5-0.5b-instruct-coreml
+        run: |
+          if [ ! -d "$QWEN_COREML_DIR/QwenEmbedding.mlpackage" ]; then
+            echo "models/ にはまだモデルがない（トークナイザーだけ）"
+            exit 0
+          fi
+          python scripts/coreml/make_manifest.py --check "$QWEN_COREML_DIR" "MyHome.swiftpm/Core/AI/Qwen/QwenModelManifest+Files.swift"
+          python scripts/coreml/check_coreml.py build/qwen "$QWEN_COREML_DIR"
+          swift test --filter QwenCoreMLEngineTests
       - name: 変換したモデルを保存
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Qwen2.5-0.5B-Instruct を Core ML（iOS 18 以降。状態付きの KV キャッシュ、重みは 4bit）に変換する。
+"""Qwen2.5-0.5B-Instruct を Core ML（iOS 18 以降。状態付きの KV キャッシュ）に変換する。
 
 使い方:
   python scripts/coreml/convert_qwen.py verify  <モデルのフォルダ>            # transformers と同じ結果になるか（PyTorch のまま）
-  python scripts/coreml/convert_qwen.py convert <モデルのフォルダ> <出力先>   # 5 つの .mlpackage に分けて書き出す
+  python scripts/coreml/convert_qwen.py convert <モデルのフォルダ> <出力先>   # 9 つの .mlpackage に分けて書き出す
 
-出力（GitHub の 1 ファイル 100MB の上限より小さくするため、5 つに分ける）:
-  QwenEmbedding.mlpackage   input_ids (1, Q) int32 → hidden (1, Q, 896)
-  QwenLayers0.mlpackage     層 0〜7。hidden・position_ids (Q)・causal_mask (1, 1, Q, K) → hidden。KV キャッシュは状態
-  QwenLayers1.mlpackage     層 8〜15
-  QwenLayers2.mlpackage     層 16〜23
-  QwenHead.mlpackage        hidden → 最後の位置の logits (1, 1, 151936)
-Q は 1〜MAX_QUERY、K は 1〜MAX_CONTEXT。重みは 4bit（32 個ずつの区切りで尺度を持つ）。
+出力（GitHub の 1 ファイル 100MB の上限より小さくするため、9 つに分ける）:
+  QwenEmbedding.mlpackage     input_ids (1, Q) int32 → hidden (1, Q, 896)。重みは 4bit（入力の埋め込みは 4bit でも答えが変わらない）
+  QwenLayers0〜5.mlpackage    層を 4 つずつ。hidden・position_ids (Q)・causal_mask (1, 1, Q, K) → hidden。KV キャッシュは状態。8bit
+  QwenHead0・1.mlpackage      hidden → 最後の位置の logits。語彙の前半 (1, 1, 75968) と後半 (1, 1, 75968)。8bit
+Q は 1〜MAX_QUERY、K は 1〜MAX_CONTEXT。尺度は 32 個ずつの区切りで持つ。
+層と出力を 4bit にすると、元のモデルとの一致が 71〜78% に落ちる（8bit なら 93%。scripts/coreml/README.md）。
 
 モデルのフォルダは Hugging Face の Qwen/Qwen2.5-0.5B-Instruct（Apache 2.0）を落としたもの。
 """
@@ -26,7 +25,8 @@ from qwen_model import QwenConfig, load_weights, Embedding, LayerChunk, Head, ca
 
 MAX_CONTEXT = 2048
 MAX_QUERY = 512
-CHUNKS = [(0, 8), (8, 16), (16, 24)]
+CHUNKS = [(0, 4), (4, 8), (8, 12), (12, 16), (16, 20), (20, 24)]
+HEADS = [(0, 75968), (75968, 151936)]
 PROMPT = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n日本の首都はどこですか？<|im_end|>\n<|im_start|>assistant\n"
 
 
@@ -34,7 +34,11 @@ def forward_chunks(cfg, w, ids, dtype=torch.float32):
     """分けたモデルを順に通す（Swift の側と同じ手順）。最初に全部を、次に 1 トークンずつ。"""
     embed = Embedding(cfg, w)
     chunks = [LayerChunk(cfg, w, start, end, MAX_CONTEXT, dtype=dtype) for start, end in CHUNKS]
-    head = Head(cfg, w)
+    parts = [Head(cfg, w, start, end) for start, end in HEADS]
+
+    def head(hidden):
+        return torch.cat([part(hidden) for part in parts], dim=-1)
+
     logits = []
     with torch.no_grad():
         hidden = embed(ids)
@@ -84,17 +88,17 @@ def verify(model_dir):
     print("一致した")
 
 
-def quantize(mlmodel):
+def quantize(mlmodel, dtype):
     import coremltools as ct
 
     op_config = ct.optimize.coreml.OpLinearQuantizerConfig(
-        mode="linear_symmetric", dtype="int4", granularity="per_block", block_size=32, weight_threshold=2048
+        mode="linear_symmetric", dtype=dtype, granularity="per_block", block_size=32, weight_threshold=2048
     )
     config = ct.optimize.coreml.OptimizationConfig(global_config=op_config)
     return ct.optimize.coreml.linear_quantize_weights(mlmodel, config=config)
 
 
-def convert_module(module, example_inputs, inputs, outputs, states, path, description):
+def convert_module(module, example_inputs, inputs, outputs, states, path, description, dtype):
     import coremltools as ct
 
     module.eval()
@@ -109,7 +113,7 @@ def convert_module(module, example_inputs, inputs, outputs, states, path, descri
         compute_precision=ct.precision.FLOAT16,
         skip_model_load=True,
     )
-    mlmodel = quantize(mlmodel)
+    mlmodel = quantize(mlmodel, dtype)
     mlmodel.short_description = description
     mlmodel.author = "Qwen2.5-0.5B-Instruct (Apache 2.0, Alibaba Cloud) / MyHome で Core ML に変換"
     mlmodel.license = "Apache License 2.0"
@@ -136,6 +140,7 @@ def convert(model_dir, out_dir):
         None,
         os.path.join(out_dir, "QwenEmbedding.mlpackage"),
         "Qwen2.5-0.5B: トークン → 埋め込み",
+        "int4",
     )
 
     hidden = torch.zeros((1, 4, cfg.hidden), dtype=torch.float32)
@@ -160,17 +165,20 @@ def convert(model_dir, out_dir):
             states,
             os.path.join(out_dir, f"QwenLayers{number}.mlpackage"),
             f"Qwen2.5-0.5B: 層 {start}〜{end - 1}（KV キャッシュは状態）",
+            "int8",
         )
 
-    convert_module(
-        Head(cfg, w),
-        (hidden,),
-        [ct.TensorType(name="hidden", shape=(1, query, cfg.hidden), dtype=np.float16)],
-        [ct.TensorType(name="logits", dtype=np.float16)],
-        None,
-        os.path.join(out_dir, "QwenHead.mlpackage"),
-        "Qwen2.5-0.5B: 最後の位置の logits",
-    )
+    for number, (start, end) in enumerate(HEADS):
+        convert_module(
+            Head(cfg, w, start, end),
+            (hidden,),
+            [ct.TensorType(name="hidden", shape=(1, query, cfg.hidden), dtype=np.float16)],
+            [ct.TensorType(name="logits", dtype=np.float16)],
+            None,
+            os.path.join(out_dir, f"QwenHead{number}.mlpackage"),
+            f"Qwen2.5-0.5B: 最後の位置の logits（語彙 {start}〜{end - 1}）",
+            "int8",
+        )
 
 
 def main():
