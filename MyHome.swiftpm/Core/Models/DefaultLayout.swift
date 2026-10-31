@@ -17,7 +17,25 @@ enum DefaultLayout {
             link("link.wikipedia", "Wikipedia", url: "https://ja.wikipedia.org", symbol: "book.closed.fill", tint: 0x4B5563),
             link("link.apple-support", "Apple サポート", url: "https://support.apple.com/ja-jp", symbol: "questionmark.circle.fill", tint: 0x0EA5E9)
         ]
-        return HomePage(id: "page.home", items: items)
+        return HomePage(id: "page.home", items: items, widgets: homeWidgets())
+    }
+
+    /// 初めて起動した時のウィジェット（追加フェーズ A: ホーム画面はウィジェットが基本）。時計は画面の上部にあるので入れない。
+    /// 小を 1 マス、中を 2 マスとして、横 4 マス（縦向きの iPad）でも 6 マス（横向き）でも、行の途中に隙間ができない順に並べる。
+    static func homeWidgets() -> [HomeWidget] {
+        let widgets: [HomeWidget] = [
+            HomeWidget(id: "widget.weather", kind: .app(.weather), size: .medium),
+            HomeWidget(id: "widget.calendar", kind: .calendar, size: .small),
+            HomeWidget(id: "widget.tasks", kind: .app(.tasks), size: .small),
+            HomeWidget(id: "widget.notes", kind: .app(.notes), size: .medium),
+            HomeWidget(id: "widget.ai", kind: .app(.aiAssistant), size: .small),
+            HomeWidget(id: "widget.timer", kind: .timer, size: .small),
+            HomeWidget(id: "widget.calculator", kind: .app(.calculator), size: .small),
+            HomeWidget(id: "widget.converter", kind: .app(.unitConverter), size: .small),
+            HomeWidget(id: "widget.texttools", kind: .app(.textTools), size: .small),
+            HomeWidget(id: "widget.settings", kind: .app(.settings), size: .small)
+        ]
+        return widgets
     }
 
     static func linksPage() -> HomePage {
@@ -41,7 +59,7 @@ enum DefaultLayout {
 
     /// アプリ内の機能の項目。初期配置と「項目を追加」で同じ ID・見た目にする（ID が同じなので二重には追加されない）。
     static func item(for feature: AppFeature) -> HomeItem {
-        let style: FeatureIconStyle = iconStyle(for: feature)
+        let style: FeatureIconStyle = FeatureIconStyle.of(feature)
         return HomeItem(
             id: "feature.\(feature.rawValue)",
             title: feature.title,
@@ -51,12 +69,17 @@ enum DefaultLayout {
         )
     }
 
-    private struct FeatureIconStyle {
-        let symbol: String
-        let tint: UInt32
+    private static func link(_ id: String, _ title: String, url: String, symbol: String, tint: UInt32) -> HomeItem {
+        HomeItem(id: id, title: title, symbolName: symbol, tint: RGBAColor(hex: tint), action: .openURL(url))
     }
+}
 
-    private static func iconStyle(for feature: AppFeature) -> FeatureIconStyle {
+/// 機能の記号と色（アイコンとアプリのウィジェットで同じものを使う）。
+struct FeatureIconStyle: Hashable, Sendable {
+    let symbol: String
+    let tint: UInt32
+
+    static func of(_ feature: AppFeature) -> FeatureIconStyle {
         switch feature {
         case .settings: return FeatureIconStyle(symbol: "gearshape.fill", tint: 0x6B7280)
         case .featureStatus: return FeatureIconStyle(symbol: "checklist", tint: 0x0D9488)
@@ -69,9 +92,5 @@ enum DefaultLayout {
         case .timer: return FeatureIconStyle(symbol: "timer", tint: 0xEF4444)
         case .weather: return FeatureIconStyle(symbol: "cloud.sun.fill", tint: 0x0284C7)
         }
-    }
-
-    private static func link(_ id: String, _ title: String, url: String, symbol: String, tint: UInt32) -> HomeItem {
-        HomeItem(id: id, title: title, symbolName: symbol, tint: RGBAColor(hex: tint), action: .openURL(url))
     }
 }

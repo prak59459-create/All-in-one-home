@@ -28,6 +28,8 @@ enum WidgetKind: Hashable, Sendable {
     case note(String)
     /// タイマー（TimerBoard の先頭のカウントダウンを表示する。F0218–F0222）。
     case timer
+    /// アプリ（機能）を開くウィジェット（追加フェーズ A。アイコンの代わり）。天気・メモ・タスクなどは中身の一部も表示する。
+    case app(AppFeature)
 
     /// ギャラリー（F0161）に並べる既定の設定。
     static let galleryKinds: [WidgetKind] = [
@@ -36,14 +38,22 @@ enum WidgetKind: Hashable, Sendable {
         .calendar,
         .note(""),
         .timer
-    ]
+    ] + appKinds
+
+    /// アプリのウィジェットにできる機能（開ける機能だけ）。
+    static var appKinds: [WidgetKind] {
+        AppFeature.allCases
+            .filter { (feature: AppFeature) -> Bool in feature.state.canOpen && feature != .timer }
+            .map { (feature: AppFeature) -> WidgetKind in .app(feature) }
+    }
 
     var title: String {
         switch self {
         case .clock(let style): return style.isAnalog ? "アナログ時計" : "デジタル時計"
         case .calendar: return "カレンダー"
-        case .note: return "メモ"
+        case .note: return "付箋"
         case .timer: return "タイマー"
+        case .app(let feature): return feature.title
         }
     }
 
@@ -51,9 +61,18 @@ enum WidgetKind: Hashable, Sendable {
         switch self {
         case .clock: return "clock"
         case .calendar: return "calendar"
-        case .note: return "note.text"
+        case .note: return "square.and.pencil"
         case .timer: return "timer"
+        case .app(let feature): return FeatureIconStyle.of(feature).symbol
         }
+    }
+
+    /// アプリのウィジェットなら、その機能。
+    var feature: AppFeature? {
+        if case .app(let feature) = self {
+            return feature
+        }
+        return nil
     }
 }
 
@@ -64,8 +83,8 @@ struct ClockWidgetStyle: Hashable, Codable, Sendable {
 }
 
 enum WidgetLimits {
-    /// 1ページに置けるウィジェットの数。
-    static let maximumPerPage: Int = 8
+    /// 1ページに置けるウィジェットの数（追加フェーズ A でウィジェット型のホーム画面にしたので 8 から 12 に）。
+    static let maximumPerPage: Int = 12
     /// メモの最大文字数。
     static let maximumNoteLength: Int = 2000
 }

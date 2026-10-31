@@ -125,7 +125,8 @@ final class WidgetAndWallpaperTests: XCTestCase {
         XCTAssertEqual(router.sheet, .editWidget("n"))
         router.requestWidgetRemoval(note)
         XCTAssertEqual(router.alert, .confirmWidgetRemoval(note))
-        XCTAssertTrue(router.alert?.title.contains("メモ") ?? false)
+        XCTAssertTrue(router.alert?.title.contains("付箋") ?? false)
+        XCTAssertTrue(router.alert?.message.contains("付箋の内容も消えます") ?? false)
     }
 
     func testMonthGridStartsOnCalendarFirstWeekday() {

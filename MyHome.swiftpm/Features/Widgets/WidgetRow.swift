@@ -8,7 +8,7 @@ struct WidgetRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: DesignTokens.Widget.spacing) {
                 ForEach(widgets) { widget in
                     WidgetCard(widget: widget)
                 }
@@ -23,11 +23,13 @@ struct WidgetRow: View {
 @MainActor
 struct WidgetCard: View {
     let widget: HomeWidget
+    /// 置ける幅。中のウィジェットが入らない時（Slide Over など）は、小の大きさで表示する。
+    var maximumWidth: CGFloat = .infinity
     @Environment(AppRouter.self) private var router
     @Environment(HomeStore.self) private var store
 
     var body: some View {
-        WidgetContent(widget: widget)
+        WidgetContent(widget: widget, size: displaySize)
             // 大きさの決まったカードなので、文字は iPad のホーム画面のウィジェットと同じく xxxLarge で止める
             // （Phase 8 の起動テストで、いちばん大きな文字では月の名前やメモが 1〜2 文字しか見えなかった）
             .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
@@ -46,8 +48,8 @@ struct WidgetCard: View {
             .onTapGesture {
                 tap()
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel("ウィジェット: \(widget.kind.title)")
+            .modifier(WidgetContextMenu(widget: widget))
+            .modifier(WidgetAccessibility(widget: widget, isEditing: router.isEditing, onActivate: tap))
             .accessibilityActions {
                 if router.isEditing {
                     Button("設定") { router.presentWidgetEditor(widget) }
@@ -58,8 +60,12 @@ struct WidgetCard: View {
             }
     }
 
+    private var displaySize: WidgetSize {
+        widget.size == .medium && maximumWidth >= DesignTokens.Widget.mediumWidth ? .medium : .small
+    }
+
     private var width: CGFloat {
-        widget.size == .medium ? DesignTokens.Widget.mediumWidth : DesignTokens.Widget.smallWidth
+        displaySize == .medium ? DesignTokens.Widget.mediumWidth : DesignTokens.Widget.smallWidth
     }
 
     private func tap() {
@@ -72,8 +78,66 @@ struct WidgetCard: View {
             router.presentWidgetEditor(widget)
         case .timer:
             router.sheet = .feature(.timer)
+        case .app(let feature):
+            router.open(feature)
         case .clock, .calendar:
             break
+        }
+    }
+}
+
+/// 編集中でない時の長押しメニュー（編集モードへの切り替え・設定・削除）。
+@MainActor
+struct WidgetContextMenu: ViewModifier {
+    let widget: HomeWidget
+    @Environment(AppRouter.self) private var router
+
+    func body(content: Content) -> some View {
+        if router.isEditing {
+            content
+        } else {
+            content.contextMenu {
+                Button {
+                    router.beginEditing()
+                } label: {
+                    Label("ホーム画面を編集", systemImage: "square.and.pencil")
+                }
+                Button {
+                    router.presentWidgetEditor(widget)
+                } label: {
+                    Label("ウィジェットを設定", systemImage: "slider.horizontal.3")
+                }
+                Button(role: .destructive) {
+                    router.requestWidgetRemoval(widget)
+                } label: {
+                    Label("削除", systemImage: "minus.circle")
+                }
+            }
+        }
+    }
+}
+
+/// VoiceOver での読み上げ。アプリのウィジェットは 1 つのボタンとして中身ごと読み上げ、ダブルタップで開く。
+/// それ以外（時計・カレンダーなど）は、中の要素を順に読む。
+@MainActor
+struct WidgetAccessibility: ViewModifier {
+    let widget: HomeWidget
+    let isEditing: Bool
+    let onActivate: @MainActor () -> Void
+
+    func body(content: Content) -> some View {
+        if let feature = widget.kind.feature {
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isEditing ? "ウィジェットの設定を開きます" : "\(feature.title)を開きます")
+                .accessibilityAction {
+                    onActivate()
+                }
+        } else {
+            content
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("ウィジェット: \(widget.kind.title)")
         }
     }
 }
@@ -81,17 +145,20 @@ struct WidgetCard: View {
 @MainActor
 struct WidgetContent: View {
     let widget: HomeWidget
+    let size: WidgetSize
 
     var body: some View {
         switch widget.kind {
         case .clock(let style):
-            ClockWidgetView(style: style, size: widget.size)
+            ClockWidgetView(style: style, size: size)
         case .calendar:
-            CalendarWidgetView(size: widget.size)
+            CalendarWidgetView(size: size)
         case .note(let text):
             NoteWidgetView(text: text)
         case .timer:
             TimerWidgetView()
+        case .app(let feature):
+            AppWidgetView(feature: feature, size: size)
         }
     }
 }

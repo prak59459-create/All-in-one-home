@@ -65,3 +65,29 @@ enum TextSizePreference: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 }
+
+/// ホーム画面の形（追加フェーズ A）。ウィジェット型ではアプリのアイコンと Dock を出さず、ウィジェットからアプリを開く。
+enum HomeStyle: String, CaseIterable, Codable, Identifiable, Sendable {
+    case widgets
+    case icons
+
+    var id: String {
+        rawValue
+    }
+
+    var title: String {
+        switch self {
+        case .widgets: return "ウィジェット"
+        case .icons: return "アイコン"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .widgets:
+            return "ウィジェットを並べ、アプリはウィジェットか下の「アプリ」から開きます。アイコンと Dock は表示しません（配置は残っていて、アイコンに戻すと表示します）。"
+        case .icons:
+            return "アイコンと Dock を並べます。ウィジェットは各ページの上部に横に並びます。"
+        }
+    }
+}

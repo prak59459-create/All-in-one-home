@@ -12,6 +12,7 @@ struct SettingsView: View {
         @Bindable var navigation = router
         NavigationStack(path: $navigation.settingsPath) {
             Form {
+                HomeStyleSection()
                 Section("テーマ") {
                     ThemePickerView()
                 }
@@ -85,6 +86,32 @@ struct SettingsView: View {
                 }
             }
             .pickerStyle(.segmented)
+        }
+    }
+}
+
+/// ホーム画面の形（追加フェーズ A）。ウィジェット型にした時、アプリのウィジェットがなければおすすめを足す。
+@MainActor
+struct HomeStyleSection: View {
+    @Environment(SettingsStore.self) private var settings
+    @Environment(HomeStore.self) private var home
+
+    var body: some View {
+        let selection = Binding<HomeStyle>(
+            get: { settings.homeStyle },
+            set: { (style: HomeStyle) in HomeStyleSwitcher.apply(style, settings: settings, home: home) }
+        )
+        Section {
+            Picker("ホーム画面", selection: selection) {
+                ForEach(HomeStyle.allCases) { (style: HomeStyle) in
+                    Text(style.title).tag(style)
+                }
+            }
+            .pickerStyle(.segmented)
+        } header: {
+            Text("ホーム画面")
+        } footer: {
+            Text(settings.homeStyle.detail)
         }
     }
 }

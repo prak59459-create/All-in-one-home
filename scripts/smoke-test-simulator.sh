@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # ビルド済みアプリを iOS Simulator にインストールし、次の通りに起動して、それぞれ数秒後もプロセスが動いているか確認する。macOS 専用。
-#   default : 初期レイアウト（保存ファイルなし）
-#   empty   : 項目 0 件（-MyHomeSampleItems 0。検証用の起動なので保存しない）
-#   many    : 1ページに 150 件（-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150）
-#   restore : 保存ファイル（scripts/fixtures/home-restore.json、形式の版 1）を置いて起動し、その配置で復元されるか（T2-7、版 1 → 2 の移行）
+#   default : 初期レイアウト（保存ファイルなし）。追加フェーズ A からウィジェット型のホーム画面
+#   widgets-editing / app-library : 同じ初期レイアウトで、編集モード（-MyHomeStartEditing）と、アプリの一覧（-MyHomeShowAppLibrary）
+#   empty   : 項目 0 件（-MyHomeSampleItems 0。検証用の起動なので保存しない）。ウィジェットのないページの表示
+#   many    : 1ページに 150 件（-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150）。アイコン型（-MyHomeHomeStyle icons）
+#   restore : 保存ファイル（scripts/fixtures/home-restore.json、形式の版 1）を置いて起動し、その配置で復元されるか（T2-7、版 1 → 2 の移行）。
+#             配置（アイコン）が見えるよう、アイコン型で開く（以下の editing / folder も同じ）
 #   editing : フォルダとウィジェット入りの保存ファイル（home-folder.json、版 3）で、編集モードで起動（-MyHomeStartEditing）
 #   folder  : 同じファイルで、フォルダを開いて起動（-MyHomeOpenFolder folder.check）
 #   app-*   : ミニアプリの保存ファイル（scripts/fixtures/apps/*.json）を置き、そのミニアプリを開いて起動（-MyHomeOpenFeature <名前>）。
@@ -11,8 +13,9 @@
 #   app-aiAssistant : AI の画面を開いて起動。端末内モデルが使えるか（使えない時はその理由）の表示を確かめる（モデルは読み込まない）
 #   app-weather : 天気の保存ファイル（通信はオフ、前回取得した天気。make-weather-fixture.py が今の時刻に合わせて作る）を置いて
 #             天気を開く。通信しないまま前回の天気が表示されるか、保存ファイルが読めたかを確かめる
+#   home-widgets-data : ミニアプリと天気の保存ファイルがある状態で、初期レイアウトのホーム画面（ウィジェットに中身が出るか）
 #   large-text / large-text-weather : 端末の文字の大きさを最大（アクセシビリティ XXXL）にして、ホーム画面と天気の画面を開く（崩れの確認）
-#   dark    : 端末をダークモードにしてホーム画面を開く（外観を「端末に合わせる」にした保存ファイルで）
+#   dark    : 端末をダークモードにしてホーム画面を開く（初期レイアウトと同じく、外観は「端末に合わせる」）
 #   settings-backup / settings-about : この iPad のバックアップ（make-backup-fixture.py が作る 2 つ）を置いて、設定の
 #             「バックアップと復元」と「このアプリについて」を開く（-MyHomeSettingsPage <ページ>）。開いても消えないかも確かめる
 #   broken  : 壊れた保存ファイルを置いて起動し、初期配置で起動して元のファイルを別名で残すか（T2-2）
@@ -79,15 +82,17 @@ record_check() {
 }
 
 launch_case default
+launch_case widgets-editing -MyHomeStartEditing
+launch_case app-library -MyHomeShowAppLibrary
 launch_case empty -MyHomeSampleItems 0
-launch_case many -MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150
+launch_case many -MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150 -MyHomeHomeStyle icons
 
 # 保存先はアプリのデータ領域の Library/Application Support/MyHome/home.json（FileHomeArchiveStorage）
 DATA_DIR="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)/Library/Application Support/MyHome"
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 mkdir -p "$DATA_DIR"
 cp "$ROOT/scripts/fixtures/home-restore.json" "$DATA_DIR/home.json"
-launch_case restore
+launch_case restore -MyHomeHomeStyle icons
 if [ -f "$DATA_DIR/home.json" ] && [ -z "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
   record_check restore-file PASS "保存ファイルを読み込めた（別名に退避されていない。表示は restore.png）"
 else
@@ -96,8 +101,8 @@ fi
 
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 cp "$ROOT/scripts/fixtures/home-folder.json" "$DATA_DIR/home.json"
-launch_case editing -MyHomeStartEditing
-launch_case folder -MyHomeOpenFolder folder.check
+launch_case editing -MyHomeStartEditing -MyHomeHomeStyle icons
+launch_case folder -MyHomeOpenFolder folder.check -MyHomeHomeStyle icons
 if [ -z "$(find "$DATA_DIR" -name 'home.unreadable-*.json')" ]; then
   record_check folder-file PASS "フォルダ入りの保存ファイルを読み込めた（表示は editing.png / folder.png）"
 else
@@ -128,6 +133,11 @@ else
   record_check weather-file FAIL "天気の保存ファイルが読み込めず、別名に退避された"
 fi
 
+# 初期レイアウト（ウィジェット型）に戻し、ミニアプリと天気のデータが入ったウィジェットを撮る
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
+rm -f "$DATA_DIR/home.json"
+launch_case home-widgets-data
+
 # 文字の大きさとダークモード（Phase 8）。設定を変えられなかった時は、その旨を残して続ける
 if xcrun simctl ui "$UDID" content_size accessibility-extra-extra-extra-large; then
   launch_case large-text
@@ -137,9 +147,7 @@ else
   echo "::warning::Simulator の文字の大きさを変えられなかった（large-text は撮っていない）"
 fi
 if xcrun simctl ui "$UDID" appearance dark; then
-  # home-folder.json は外観を「ライト」に固定しているので、「端末に合わせる」に変えた保存ファイルで開く
-  xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
-  sed 's/"appearance": "light"/"appearance": "system"/' "$ROOT/scripts/fixtures/home-folder.json" > "$DATA_DIR/home.json"
+  # 初期レイアウト（外観は「端末に合わせる」）のまま、ウィジェットに中身がある状態で開く
   launch_case dark
   xcrun simctl ui "$UDID" appearance light || true
 else

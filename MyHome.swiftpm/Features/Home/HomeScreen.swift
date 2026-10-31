@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// ホーム画面のルート。壁紙・時計・ページ・ページインジケーター・Dock を縦に並べる。
+/// ウィジェット型（追加フェーズ A。初期設定）では、ページにはウィジェットだけを並べ、Dock の代わりに「アプリ」と「編集」のバーを置く。
 /// 各部品は別ファイルの小さな View にし、ここでは並べることだけを行う。
 @MainActor
 struct HomeScreen: View {
@@ -20,10 +21,16 @@ struct HomeScreen: View {
                 FolderOverlayView(folderID: folderID)
                     .transition(MotionStyle.appear(motion))
             }
+            if router.isShowingAppLibrary {
+                AppLibraryOverlay()
+                    .transition(MotionStyle.appear(motion))
+            }
         }
-        // フォルダの開閉と編集モードの切り替えは、動きの設定に従ってアニメーションする（F0660、F0672）
+        // フォルダ・アプリの一覧の開閉と編集モードの切り替えは、動きの設定に従ってアニメーションする（F0660、F0672）
         .animation(MotionStyle.standard(motion), value: router.openFolderID)
+        .animation(MotionStyle.standard(motion), value: router.isShowingAppLibrary)
         .animation(MotionStyle.standard(motion), value: router.isEditing)
+        .animation(MotionStyle.standard(motion), value: settings.homeStyle)
         .background {
             HomeKeyboardShortcuts(pageIndex: $pageIndex, pageCount: store.layout.pages.count)
         }
@@ -53,9 +60,20 @@ struct HomeScreen: View {
         VStack(spacing: DesignTokens.Spacing.medium) {
             header
             SaveStatusBanner()
-            PagedGridView(pages: store.layout.pages, selection: $pageIndex)
-            PageIndicatorView(count: store.layout.pages.count, selection: $pageIndex)
-            DockView(items: store.layout.dock)
+            switch settings.homeStyle {
+            case .widgets:
+                WidgetPagesView(pages: store.layout.pages, selection: $pageIndex)
+                PageIndicatorView(count: store.layout.pages.count, selection: $pageIndex)
+                // 編集中は上の編集のバーを使うので隠す（高さは残して、ページの位置が動かないようにする）
+                WidgetHomeBar()
+                    .opacity(router.isEditing ? 0 : 1)
+                    .allowsHitTesting(!router.isEditing)
+                    .accessibilityHidden(router.isEditing)
+            case .icons:
+                PagedGridView(pages: store.layout.pages, selection: $pageIndex)
+                PageIndicatorView(count: store.layout.pages.count, selection: $pageIndex)
+                DockView(items: store.layout.dock)
+            }
         }
         .padding(.vertical, DesignTokens.Spacing.medium)
     }

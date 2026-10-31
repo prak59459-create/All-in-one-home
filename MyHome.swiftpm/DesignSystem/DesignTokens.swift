@@ -52,8 +52,10 @@ enum DesignTokens {
 
     enum Widget {
         static let smallWidth: CGFloat = 170
+        /// ウィジェットどうしの間隔。
+        static let spacing: CGFloat = 12
         /// 中は小2つ分と、その間の間隔。
-        static let mediumWidth: CGFloat = 352
+        static let mediumWidth: CGFloat = smallWidth * 2 + spacing
         static let height: CGFloat = 170
     }
 

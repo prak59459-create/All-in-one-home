@@ -56,6 +56,24 @@ final class SettingsStore {
         }
     }
 
+    /// ホーム画面の形（追加フェーズ A）。
+    var homeStyle: HomeStyle {
+        didSet {
+            if homeStyle != oldValue {
+                onChange?()
+            }
+        }
+    }
+
+    /// 初期設定を終えたか（追加フェーズ A）。
+    var hasCompletedSetup: Bool {
+        didSet {
+            if hasCompletedSetup != oldValue {
+                onChange?()
+            }
+        }
+    }
+
     /// 設定が変わった時に呼ぶ（PersistenceController.attach が設定する）。
     @ObservationIgnored var onChange: (@MainActor () -> Void)?
 
@@ -65,7 +83,9 @@ final class SettingsStore {
         wallpaper: WallpaperSetting = .themeGradient,
         showsSeconds: Bool = false,
         motion: MotionPreference = .system,
-        textSize: TextSizePreference = .system
+        textSize: TextSizePreference = .system,
+        homeStyle: HomeStyle = .widgets,
+        hasCompletedSetup: Bool = false
     ) {
         self.themeID = themeID
         self.appearance = appearance
@@ -73,6 +93,8 @@ final class SettingsStore {
         self.showsSeconds = showsSeconds
         self.motion = motion
         self.textSize = textSize
+        self.homeStyle = homeStyle
+        self.hasCompletedSetup = hasCompletedSetup
     }
 
     convenience init(saved: SavedSettings) {
@@ -82,7 +104,9 @@ final class SettingsStore {
             wallpaper: saved.wallpaper,
             showsSeconds: saved.showsSeconds,
             motion: saved.motion,
-            textSize: saved.textSize
+            textSize: saved.textSize,
+            homeStyle: saved.homeStyle,
+            hasCompletedSetup: saved.hasCompletedSetup
         )
     }
 
@@ -92,6 +116,15 @@ final class SettingsStore {
 
     /// 保存する内容。
     var saved: SavedSettings {
-        SavedSettings(themeID: themeID, appearance: appearance, wallpaper: wallpaper, showsSeconds: showsSeconds, motion: motion, textSize: textSize)
+        SavedSettings(
+            themeID: themeID,
+            appearance: appearance,
+            wallpaper: wallpaper,
+            showsSeconds: showsSeconds,
+            motion: motion,
+            textSize: textSize,
+            homeStyle: homeStyle,
+            hasCompletedSetup: hasCompletedSetup
+        )
     }
 }

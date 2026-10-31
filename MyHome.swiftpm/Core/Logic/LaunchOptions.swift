@@ -2,7 +2,8 @@ import Foundation
 
 /// 起動引数による検証用の設定。Simulator や Xcode から起動した時だけ使う（Swift Playgrounds では指定できない）。
 /// 例: `-MyHomeSampleItems 150 -MyHomeSampleItemsPerPage 150`、`-MyHomeStartEditing`、`-MyHomeOpenFolder <項目 ID>`、
-/// `-MyHomeOpenFeature <機能の rawValue>`（例: calculator）、`-MyHomeSettingsPage <設定のページ>`（例: backup）。
+/// `-MyHomeOpenFeature <機能の rawValue>`（例: calculator）、`-MyHomeSettingsPage <設定のページ>`（例: backup）、
+/// `-MyHomeHomeStyle <widgets / icons>`（ホーム画面の形を変える。設定に保存する）、`-MyHomeShowAppLibrary`（アプリの一覧を開く）。
 /// 操作を自動で行えない Simulator の起動テストで、編集中・フォルダ・ミニアプリを開いた画面のスクリーンショットを撮るために使う。
 struct LaunchOptions: Hashable, Sendable {
     static let sampleItemsFlag: String = "-MyHomeSampleItems"
@@ -11,6 +12,8 @@ struct LaunchOptions: Hashable, Sendable {
     static let openFolderFlag: String = "-MyHomeOpenFolder"
     static let openFeatureFlag: String = "-MyHomeOpenFeature"
     static let settingsPageFlag: String = "-MyHomeSettingsPage"
+    static let homeStyleFlag: String = "-MyHomeHomeStyle"
+    static let showAppLibraryFlag: String = "-MyHomeShowAppLibrary"
     static let defaultItemsPerPage: Int = 60
 
     var sampleItemCount: Int?
@@ -21,6 +24,9 @@ struct LaunchOptions: Hashable, Sendable {
     var openFeature: AppFeature?
     /// 起動時に開く設定の中のページ（設定も開く）。知らない名前は無視する。
     var settingsPage: SettingsPage?
+    /// 起動時に切り替えるホーム画面の形。知らない名前は無視する。
+    var homeStyle: HomeStyle?
+    var showsAppLibrary: Bool
 
     init(arguments: [String]) {
         sampleItemCount = LaunchOptions.intValue(after: LaunchOptions.sampleItemsFlag, in: arguments)
@@ -31,6 +37,8 @@ struct LaunchOptions: Hashable, Sendable {
         let feature: AppFeature? = LaunchOptions.value(after: LaunchOptions.openFeatureFlag, in: arguments).flatMap(AppFeature.init(rawValue:))
         openFeature = feature?.state.canOpen == true ? feature : nil
         settingsPage = LaunchOptions.value(after: LaunchOptions.settingsPageFlag, in: arguments).flatMap(SettingsPage.init(rawValue:))
+        homeStyle = LaunchOptions.value(after: LaunchOptions.homeStyleFlag, in: arguments).flatMap(HomeStyle.init(rawValue:))
+        showsAppLibrary = arguments.contains(LaunchOptions.showAppLibraryFlag)
     }
 
     static func current() -> LaunchOptions {
@@ -53,6 +61,9 @@ struct LaunchOptions: Hashable, Sendable {
     /// 起動時の画面の状態（編集中・開くフォルダ・開く機能）を反映する。
     @MainActor
     func apply(to router: AppRouter) {
+        if showsAppLibrary {
+            router.showAppLibrary()
+        }
         if startsEditing {
             router.beginEditing()
         }
@@ -65,6 +76,14 @@ struct LaunchOptions: Hashable, Sendable {
         if let settingsPage {
             router.sheet = .feature(.settings)
             router.settingsPath = [settingsPage]
+        }
+    }
+
+    /// 起動時の設定の変更（ホーム画面の形）を反映する。
+    @MainActor
+    func apply(to settings: SettingsStore) {
+        if let homeStyle {
+            settings.homeStyle = homeStyle
         }
     }
 

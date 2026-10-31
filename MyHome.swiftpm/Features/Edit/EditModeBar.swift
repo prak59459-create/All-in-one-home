@@ -21,6 +21,7 @@ struct EditModeBarContent: View {
     let isCompact: Bool
     @Environment(AppRouter.self) private var router
     @Environment(HomeStore.self) private var store
+    @Environment(SettingsStore.self) private var settings
 
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.small) {
@@ -61,12 +62,21 @@ struct EditModeBarContent: View {
             VStack(alignment: .leading, spacing: 2) {
                 Label("ホーム画面を編集中", systemImage: "square.and.pencil")
                     .font(.headline)
-                Text("長押しして別の項目・フォルダ・ページの点・Dock に重ねると移動、タップで名前や移動先の変更、− で削除。")
+                Text(hint)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(minWidth: 260, alignment: .leading)
+        }
+    }
+
+    private var hint: String {
+        switch settings.homeStyle {
+        case .widgets:
+            return "ウィジェットをタップすると大きさの変更・移動、− で削除。「追加」でウィジェットを増やせます。"
+        case .icons:
+            return "長押しして別の項目・フォルダ・ページの点・Dock に重ねると移動、タップで名前や移動先の変更、− で削除。"
         }
     }
 

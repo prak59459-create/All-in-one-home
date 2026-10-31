@@ -4,6 +4,7 @@ extension WidgetKind: Codable {
         case type
         case clock
         case text
+        case feature
     }
 
     private enum KindType: String, Codable {
@@ -11,6 +12,8 @@ extension WidgetKind: Codable {
         case calendar
         case note
         case timer
+        /// 形式の版 4（追加フェーズ A）から。
+        case app
     }
 
     init(from decoder: Decoder) throws {
@@ -25,6 +28,8 @@ extension WidgetKind: Codable {
             self = .note(try container.decode(String.self, forKey: .text))
         case .timer:
             self = .timer
+        case .app:
+            self = .app(try container.decode(AppFeature.self, forKey: .feature))
         }
     }
 
@@ -41,6 +46,9 @@ extension WidgetKind: Codable {
             try container.encode(text, forKey: .text)
         case .timer:
             try container.encode(KindType.timer, forKey: .type)
+        case .app(let feature):
+            try container.encode(KindType.app, forKey: .type)
+            try container.encode(feature, forKey: .feature)
         }
     }
 }

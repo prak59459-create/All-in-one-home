@@ -1,9 +1,11 @@
 /// 保存ファイルの中身（F0801–F0803、F0807）。JSON の未知のキーは読み飛ばす（F0822）。
 /// 形式を変える時は currentSchemaVersion を上げ、HomeArchiveCodec.migrate に古い版からの変換を足す（F0823）。
 /// 版 1: Phase 2（ページ・Dock・項目・設定）。版 2: Phase 3（項目の種類にフォルダが増えた）。
-/// 版 3: Phase 4（ページのウィジェット、項目の画像、壁紙、タイマー）。どれも足しただけなので、古い版はそのまま読める。
+/// 版 3: Phase 4（ページのウィジェット、項目の画像、壁紙、タイマー）。
+/// 版 4: 追加フェーズ A（アプリのウィジェット。古い版のアプリが読むと壊れたファイルと見なすので、版を上げて「新しい版のデータ」として断らせる）。
+/// どれも足しただけなので、古い版はそのまま読める。
 struct SavedHome: Codable, Hashable, Sendable {
-    static let currentSchemaVersion: Int = 3
+    static let currentSchemaVersion: Int = 4
 
     var schemaVersion: Int
     var layout: HomeLayout
@@ -61,6 +63,10 @@ struct SavedSettings: Codable, Hashable, Sendable {
     var motion: MotionPreference
     /// このアプリの中の文字の大きさ（F0978）。Phase 8 で追加。ない時は端末の設定に合わせる。
     var textSize: TextSizePreference
+    /// ホーム画面の形（追加フェーズ A）。ない時はウィジェット型（ユーザーの依頼で、アイコンは基本置かない）。
+    var homeStyle: HomeStyle
+    /// 初期設定を終えたか（追加フェーズ A）。ない時は終えていない（初めての起動・この版にした最初の起動で一度出す）。
+    var hasCompletedSetup: Bool
 
     static let defaults = SavedSettings(themeID: ThemeCatalog.defaultID, appearance: .system)
 
@@ -71,6 +77,8 @@ struct SavedSettings: Codable, Hashable, Sendable {
         case showsSeconds
         case motion
         case textSize
+        case homeStyle
+        case hasCompletedSetup
     }
 
     init(
@@ -79,7 +87,9 @@ struct SavedSettings: Codable, Hashable, Sendable {
         wallpaper: WallpaperSetting = .themeGradient,
         showsSeconds: Bool = false,
         motion: MotionPreference = .system,
-        textSize: TextSizePreference = .system
+        textSize: TextSizePreference = .system,
+        homeStyle: HomeStyle = .widgets,
+        hasCompletedSetup: Bool = false
     ) {
         self.themeID = themeID
         self.appearance = appearance
@@ -87,6 +97,8 @@ struct SavedSettings: Codable, Hashable, Sendable {
         self.showsSeconds = showsSeconds
         self.motion = motion
         self.textSize = textSize
+        self.homeStyle = homeStyle
+        self.hasCompletedSetup = hasCompletedSetup
     }
 
     init(from decoder: Decoder) throws {
@@ -97,11 +109,15 @@ struct SavedSettings: Codable, Hashable, Sendable {
         let decodedSeconds: Bool? = try? container.decodeIfPresent(Bool.self, forKey: .showsSeconds)
         let decodedMotion: MotionPreference? = try? container.decodeIfPresent(MotionPreference.self, forKey: .motion)
         let decodedTextSize: TextSizePreference? = try? container.decodeIfPresent(TextSizePreference.self, forKey: .textSize)
+        let decodedStyle: HomeStyle? = try? container.decodeIfPresent(HomeStyle.self, forKey: .homeStyle)
+        let decodedSetup: Bool? = try? container.decodeIfPresent(Bool.self, forKey: .hasCompletedSetup)
         themeID = decodedTheme ?? SavedSettings.defaults.themeID
         appearance = decodedAppearance ?? SavedSettings.defaults.appearance
         wallpaper = decodedWallpaper ?? .themeGradient
         showsSeconds = decodedSeconds ?? false
         motion = decodedMotion ?? .system
         textSize = decodedTextSize ?? .system
+        homeStyle = decodedStyle ?? .widgets
+        hasCompletedSetup = decodedSetup ?? false
     }
 }

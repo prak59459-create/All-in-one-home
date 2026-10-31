@@ -15,6 +15,7 @@ struct MyHomeApp: App {
         let options: LaunchOptions = LaunchOptions.current()
         let boot: AppBootstrap = AppBootstrap.make(options: options)
         let router = AppRouter()
+        options.apply(to: boot.settings)
         options.apply(to: router)
         let session = AppSession(boot: boot, configure: { (next: AppBootstrap) in
             MyHomeApp.configure(next, router: router)
@@ -22,6 +23,7 @@ struct MyHomeApp: App {
         // 読み直した後は、なくなったかもしれないフォルダや、編集モードを閉じる
         session.onReload = {
             router.closeFolder()
+            router.closeAppLibrary()
             router.endEditing()
         }
         // 保存データの説明はタイマーの知らせより大事なので、後から出して上書きされないようにする

@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 /// ホーム画面の配置を持つストア。編集は HomeLayout+Editing などの操作を通して行い、失敗した時は配置を変えない。
@@ -50,6 +51,16 @@ final class HomeStore {
 
     func addWidget(_ widget: HomeWidget, toPage pageIndex: Int) throws {
         try edit { layout in try layout.addWidget(widget, toPage: pageIndex) }
+    }
+
+    /// おすすめのウィジェットを足す（取り消せる）。足した数を返す。
+    @discardableResult
+    func addRecommendedWidgets(toPage pageIndex: Int) throws -> Int {
+        var added: Int = 0
+        try edit { layout in
+            added = try layout.addRecommendedWidgets(toPage: pageIndex) { () -> String in "widget.\(UUID().uuidString.lowercased())" }
+        }
+        return added
     }
 
     func removeWidget(id: String) throws {

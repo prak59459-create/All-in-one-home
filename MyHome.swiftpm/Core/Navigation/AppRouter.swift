@@ -65,7 +65,15 @@ enum AppAlert: Hashable, Sendable {
             }
             return "ホーム画面から取り除きます。リンク先の Web ページや他のアプリには影響しません。"
         case .notice(_, let message): return message
-        case .confirmWidgetRemoval: return "ホーム画面から取り除きます。メモの内容も消えます（取り消しで戻せます）。"
+        case .confirmWidgetRemoval(let widget):
+            switch widget.kind {
+            case .note:
+                return "ホーム画面から取り除きます。付箋の内容も消えます（取り消しで戻せます）。"
+            case .app:
+                return "ホーム画面から取り除きます。アプリとそのデータは消えません（アプリは「アプリ」の一覧から開けます）。"
+            case .clock, .calendar, .timer:
+                return "ホーム画面から取り除きます（取り消しで戻せます）。"
+            }
         }
     }
 }
@@ -83,11 +91,31 @@ final class AppRouter {
     var openFolderID: String?
     /// 設定の中で開いているページ。設定を閉じたら空にする。
     var settingsPath: [SettingsPage] = []
+    /// アプリの一覧（ウィジェット型のホーム画面の「アプリ」。追加フェーズ A）。ホーム画面の上に重ねて表示する。
+    private(set) var isShowingAppLibrary: Bool = false
 
     init() {}
 
+    /// 機能を開く（アプリのウィジェットとアプリの一覧から）。開けない機能は説明を出す。
+    func open(_ feature: AppFeature) {
+        guard !isEditing else { return }
+        isShowingAppLibrary = false
+        sheet = feature.state.canOpen ? .feature(feature) : .unavailable(feature)
+    }
+
+    func showAppLibrary() {
+        guard !isEditing else { return }
+        openFolderID = nil
+        isShowingAppLibrary = true
+    }
+
+    func closeAppLibrary() {
+        isShowingAppLibrary = false
+    }
+
     func launch(_ item: HomeItem) {
         guard !isEditing else { return }
+        isShowingAppLibrary = false
         switch LaunchPlanner.plan(for: item.action) {
         case .confirmURL(let checked):
             alert = .confirmURL(checked)
@@ -130,6 +158,7 @@ final class AppRouter {
     }
 
     func beginEditing() {
+        isShowingAppLibrary = false
         isEditing = true
     }
 

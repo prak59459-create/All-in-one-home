@@ -18,6 +18,12 @@ struct HomeKeyboardShortcuts: View {
                 }
             }
             .keyboardShortcut(",", modifiers: .command)
+            Button("アプリ") {
+                perform {
+                    router.showAppLibrary()
+                }
+            }
+            .keyboardShortcut("l", modifiers: .command)
             Button(editTitle) {
                 perform {
                     toggleEditing()
@@ -44,7 +50,7 @@ struct HomeKeyboardShortcuts: View {
     }
 
     private func perform(_ action: () -> Void) {
-        guard router.sheet == nil, router.openFolderID == nil else { return }
+        guard router.sheet == nil, router.openFolderID == nil, !router.isShowingAppLibrary else { return }
         action()
     }
 

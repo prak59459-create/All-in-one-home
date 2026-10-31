@@ -19,7 +19,7 @@ struct FeatureSheetView: View {
         case .unavailable(let feature):
             UnavailableFeatureView(feature: feature)
         case .addItem(let pageIndex):
-            AddItemView(pageIndex: pageIndex)
+            AddItemView(pageIndex: pageIndex, initialKind: settings.homeStyle == .widgets ? .widget : .link)
         case .editItem(let itemID):
             ItemEditorView(itemID: itemID)
         case .managePages:

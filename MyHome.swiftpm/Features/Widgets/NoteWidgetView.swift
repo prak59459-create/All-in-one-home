@@ -7,11 +7,11 @@ struct NoteWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-            Label("メモ", systemImage: "note.text")
+            Label("付箋", systemImage: "square.and.pencil")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
             if text.isEmpty {
-                Text("タップしてメモを書く")
+                Text("タップして書く")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else {

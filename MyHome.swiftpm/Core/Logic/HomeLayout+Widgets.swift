@@ -26,6 +26,48 @@ extension HomeLayout {
         pages[pageIndex].widgets.append(HomeLayout.sanitized(widget))
     }
 
+    /// ウィジェット型のホーム画面のおすすめ（初めて起動した時と同じ組み合わせ。追加フェーズ A）のうち、
+    /// まだどのページにもない種類を、上限まで足す。足した数を返す。
+    @discardableResult
+    mutating func addRecommendedWidgets(toPage pageIndex: Int, makeID: () -> String) throws -> Int {
+        guard pages.indices.contains(pageIndex) else { throw LayoutEditError.pageNotFound }
+        var added: Int = 0
+        for template in DefaultLayout.homeWidgets() {
+            guard pages[pageIndex].widgets.count < WidgetLimits.maximumPerPage else { break }
+            if hasWidget(of: template.kind) {
+                continue
+            }
+            try addWidget(HomeWidget(id: makeID(), kind: template.kind, size: template.size), toPage: pageIndex)
+            added += 1
+        }
+        return added
+    }
+
+    /// その種類のウィジェットが、どこかのページにあるか（メモは中身が違っても同じ種類とみなす）。
+    func hasWidget(of kind: WidgetKind) -> Bool {
+        pages.contains { (page: HomePage) -> Bool in
+            page.widgets.contains { (widget: HomeWidget) -> Bool in HomeLayout.sameKind(widget.kind, kind) }
+        }
+    }
+
+    /// アプリのウィジェットが 1 つでもあるか（ウィジェット型のホーム画面で、おすすめを出すかの判断）。
+    var hasAppWidgets: Bool {
+        pages.contains { (page: HomePage) -> Bool in
+            page.widgets.contains { (widget: HomeWidget) -> Bool in widget.kind.feature != nil }
+        }
+    }
+
+    private static func sameKind(_ left: WidgetKind, _ right: WidgetKind) -> Bool {
+        switch (left, right) {
+        case (.clock, .clock), (.calendar, .calendar), (.note, .note), (.timer, .timer):
+            return true
+        case (.app(let a), .app(let b)):
+            return a == b
+        default:
+            return false
+        }
+    }
+
     mutating func removeWidget(id: String) throws {
         guard let found = widgetLocation(id: id) else { throw LayoutEditError.itemNotFound }
         pages[found.page].widgets.remove(at: found.index)

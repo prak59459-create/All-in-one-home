@@ -76,11 +76,11 @@ struct WidgetEditorView: View {
                 TextEditor(text: $note)
                     .frame(minHeight: 160)
             } header: {
-                Text("メモ")
+                Text("付箋")
             } footer: {
                 Text("\(note.count) / \(WidgetLimits.maximumNoteLength) 文字")
             }
-        case .calendar, .timer:
+        case .calendar, .timer, .app:
             EmptyView()
         }
     }
@@ -104,7 +104,7 @@ struct WidgetEditorView: View {
             return .clock(ClockWidgetStyle(isAnalog: isAnalog, showsSeconds: showsSeconds))
         case .note:
             return .note(note)
-        case .calendar, .timer:
+        case .calendar, .timer, .app:
             return kind
         }
     }

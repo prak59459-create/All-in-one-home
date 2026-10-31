@@ -15,9 +15,15 @@ struct AddItemView: View {
     let pageIndex: Int
     @Environment(HomeStore.self) private var store
     @Environment(\.dismiss) private var dismiss
-    @State private var kind: Kind = .link
+    /// 最初に選んでおく種類（ウィジェット型のホーム画面ではウィジェット）。
+    @State private var kind: Kind
     @State private var draft: LinkDraft = LinkDraft()
     @State private var failure: String?
+
+    init(pageIndex: Int, initialKind: Kind = .link) {
+        self.pageIndex = pageIndex
+        _kind = State(initialValue: initialKind)
+    }
 
     var body: some View {
         NavigationStack {
