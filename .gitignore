@@ -13,6 +13,10 @@ MyHome.swiftpm/.build/
 # Local measurement logs
 build-logs/
 
+# Python のキャッシュ（scripts/coreml などを動かした時にできる）
+__pycache__/
+*.pyc
+
 # Claude Code の個人用設定（共有する権限設定は .claude/settings.json）
 .claude/settings.local.json
 
