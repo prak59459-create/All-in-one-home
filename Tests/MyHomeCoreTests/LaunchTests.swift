@@ -92,6 +92,16 @@ final class LaunchTests: XCTestCase {
         XCTAssertEqual(router.sheet, .feature(.timer), "タイマーは Phase 4 で使えるようになった")
     }
 
+    func testAppsOpenFullScreenAndEditingScreensAsSheets() {
+        XCTAssertTrue(AppSheet.feature(.notes).isFullScreen)
+        XCTAssertTrue(AppSheet.feature(.settings).isFullScreen)
+        XCTAssertFalse(AppSheet.unavailable(.weather).isFullScreen)
+        XCTAssertFalse(AppSheet.addItem(pageIndex: 0).isFullScreen)
+        XCTAssertFalse(AppSheet.editItem("a").isFullScreen)
+        XCTAssertFalse(AppSheet.managePages.isFullScreen)
+        XCTAssertFalse(AppSheet.editWidget("w").isFullScreen)
+    }
+
     @MainActor
     func testLaunchOptionsCanOpenAMiniApp() async {
         let router = AppRouter()

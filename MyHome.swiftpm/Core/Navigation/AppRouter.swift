@@ -13,6 +13,14 @@ enum AppSheet: Identifiable, Hashable, Sendable {
     /// ウィジェットの設定（ウィジェット ID）。
     case editWidget(String)
 
+    /// 全画面で開くか（追加フェーズ A。アプリ＝機能は全画面、編集のための画面はシート）。
+    var isFullScreen: Bool {
+        if case .feature = self {
+            return true
+        }
+        return false
+    }
+
     var id: String {
         switch self {
         case .feature(let feature): return "feature.\(feature.rawValue)"

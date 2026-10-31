@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// シートの中身。機能ごとの画面はここで選ぶ。AI 画面はこのシートが開かれた時に初めて作られる。
+/// シート・全画面の中身。機能ごとの画面はここで選ぶ。AI 画面はこの画面が開かれた時に初めて作られる。
 @MainActor
 struct FeatureSheetView: View {
     let sheet: AppSheet
@@ -27,6 +27,27 @@ struct FeatureSheetView: View {
         case .editWidget(let widgetID):
             WidgetEditorView(widgetID: widgetID)
         }
+    }
+}
+
+/// 全画面で開いたアプリ。どのアプリにも「閉じる」「完了」があり、iPad のキーボードでは ⌘W でも閉じる。
+@MainActor
+struct FullScreenFeatureView: View {
+    let sheet: AppSheet
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        FeatureSheetView(sheet: sheet)
+            .background {
+                Button("閉じる") {
+                    dismiss()
+                }
+                .keyboardShortcut("w", modifiers: .command)
+                .opacity(0)
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
     }
 }
 
